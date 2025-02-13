@@ -1,0 +1,8 @@
+:root {
+    --color-primary:    #00e599; /* Caribbean Green */
+    --color-secondary:  #00af92; /* Persian Green  */
+    --color-tertiary:   #2a2d3e; /* Vulcan        */
+    --color-quaternary: #1a1c27; /* Bunker        */
+    --color-background: #13141b; /* Shark         */
+    --color-text:       #e6e6e8; /* Athens Gray   */
+}

@@ -1,0 +1,21 @@
+{
+  "name": "neogas-ratio",
+  "short_name": "neogas",
+  "icons": [
+    {
+      "src": "/images/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/images/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "theme_color": "#13141b",
+  "background_color": "#13141b",
+  "display": "standalone"
+}

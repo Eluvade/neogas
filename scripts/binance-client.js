@@ -1,0 +1,131 @@
+// Calculate ratio and call onData({ time, value })
+
+// Connect to Binance WebSocket streams for NEOUSDT and GASUSDT
+function connectWebSocket(onData) {
+    const ws = new WebSocket('wss://stream.binance.com:9443/ws');
+    let neoPrice = null;
+    let gasPrice = null;
+    let currentCandle = null;
+    
+    ws.onopen = () => {
+        console.log('WebSocket connected');
+        ws.send(JSON.stringify({
+            method: 'SUBSCRIBE',
+            params: ['neousdt@trade', 'gasusdt@trade'],
+            id: 1
+        }));
+    };
+    
+    ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (!data.p) return;
+        
+        const price = parseFloat(data.p);
+        const time = Math.floor(data.T / 1000);
+        
+        if (data.s === 'NEOUSDT') neoPrice = price;
+        if (data.s === 'GASUSDT') gasPrice = price;
+        
+        if (neoPrice && gasPrice) {
+            const ratio = gasPrice / neoPrice;
+            
+            if (!currentCandle || time >= currentCandle.time + 60) {
+                if (currentCandle) {
+                    onData(currentCandle);
+                }
+                currentCandle = {
+                    time,
+                    open: ratio,
+                    high: ratio,
+                    low: ratio,
+                    close: ratio,
+                    volume: 0
+                };
+            } else {
+                currentCandle.high = Math.max(currentCandle.high, ratio);
+                currentCandle.low = Math.min(currentCandle.low, ratio);
+                currentCandle.close = ratio;
+            }
+        }
+    };
+    
+    ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+    };
+
+    ws.onclose = () => {
+        console.log('WebSocket disconnected, reconnecting...');
+        setTimeout(() => connectWebSocket(onData), 1000);
+    };
+}
+
+// Call Binance REST API for NEOUSDT and GASUSDT historical data, then return ratio data
+// Update the function to accept interval parameter
+async function getHistoricalPriceData(interval = '1d') {
+    const intervals = {
+        '1m': '1m',
+        '5m': '5m',
+        '15m': '15m',
+        '1h': '1h',
+        '4h': '4h',
+        '1d': '1d'
+    };
+
+    const binanceInterval = intervals[interval];
+    if (!binanceInterval) {
+        throw new Error(`Invalid interval: ${interval}`);
+    }
+
+    // Maximum limit for Binance API
+    const limit = 1000;
+    
+    try {
+        const [neoResponse, gasResponse] = await Promise.all([
+            fetch(`https://api.binance.com/api/v3/klines?symbol=NEOUSDT&interval=${binanceInterval}&limit=${limit}`),
+            fetch(`https://api.binance.com/api/v3/klines?symbol=GASUSDT&interval=${binanceInterval}&limit=${limit}`)
+        ]);
+
+        if (!neoResponse.ok || !gasResponse.ok) {
+            throw new Error('API response was not ok');
+        }
+
+        const [neoData, gasData] = await Promise.all([
+            neoResponse.json(),
+            gasResponse.json()
+        ]);
+
+        if (!Array.isArray(neoData) || !Array.isArray(gasData) || neoData.length === 0 || gasData.length === 0) {
+            throw new Error('Invalid data received from API');
+        }
+
+        // Match the data lengths
+        const minLength = Math.min(neoData.length, gasData.length);
+        const ratioData = [];
+
+        for (let i = 0; i < minLength; i++) {
+            const neo = neoData[i];
+            const gas = gasData[i];
+            
+            // Ensure we have valid data points
+            if (neo && gas && neo.length >= 6 && gas.length >= 6) {
+                ratioData.push({
+                    time: neo[0] / 1000, // Convert to seconds
+                    open: parseFloat(gas[1]) / parseFloat(neo[1]),
+                    high: parseFloat(gas[2]) / parseFloat(neo[2]),
+                    low: parseFloat(gas[3]) / parseFloat(neo[3]),
+                    close: parseFloat(gas[4]) / parseFloat(neo[4]),
+                    volume: parseFloat(gas[5]) // Optional: include volume
+                });
+            }
+        }
+
+        return ratioData;
+    } catch (error) {
+        console.error('Error fetching historical data:', error);
+        throw error;
+    }
+}
+
+// Make functions globally accessible
+window.connectWebSocket = connectWebSocket;
+window.getHistoricalPriceData = getHistoricalPriceData;
