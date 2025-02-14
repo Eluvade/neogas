@@ -1,3 +1,5 @@
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/O5O21AKEP9)
+
 # GAS/NEO Ratio Chart
 
 Real-time price ratio tracking between GAS and NEO tokens using Binance's API.

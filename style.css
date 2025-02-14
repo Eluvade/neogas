@@ -28,6 +28,7 @@ body {
     display: flex;
     align-items: center;
     gap: 1.5rem;
+    justify-content: space-between;
 }
 
 .logo-title {
@@ -377,4 +378,16 @@ section h2 {
     0% { color: var(--color-text); }
     30% { color: #ff5252; }
     100% { color: var(--color-text); }
+}
+
+/* Ko-fi button styles */
+.kofi-button {
+    margin-left: auto; /* Push to the right */
+    padding-left: 20px;
+}
+
+/* Ensure Ko-fi button matches site theme */
+.kofi-button img {
+    height: 36px !important;
+    width: auto !important;
 }
