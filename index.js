@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', async function() {
     const chartContainer = document.getElementById('chart-container');
-    let currentInterval = '1d';
+    
+    // Get saved timeframe from localStorage or use default
+    let currentInterval = localStorage.getItem('selectedTimeframe') || '1d';
     let series;
     
     // Add data cache
@@ -84,6 +86,9 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             if (data && data.length > 0) {
                 currentInterval = interval;
+                // Save selected timeframe to localStorage
+                localStorage.setItem('selectedTimeframe', interval);
+                
                 series.setData(data);
                 series.applyOptions({
                     upColor: intervalColors[interval],
@@ -135,10 +140,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
 
     try {
-        // Initialize data manager and load initial data
         await window.dataManager.initialize();
         
-        // Subscribe to data updates
         window.dataManager.onUpdate(() => {
             const data = window.dataManager.getData(currentInterval);
             if (data && data.length > 0) {
@@ -146,8 +149,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         });
 
-        // Initial chart setup
-        const defaultButton = buttonsContainer.querySelector('button:last-child');
+        // Find the button matching the saved interval using Array.from and find
+        const savedButton = Array.from(buttonsContainer.querySelectorAll('button'))
+            .find(btn => btn.innerText === currentInterval.toUpperCase());
+        const defaultButton = savedButton || buttonsContainer.querySelector('button:last-child');
         await setChartInterval(currentInterval, defaultButton);
         loadingIndicator.style.display = 'none';
     } catch (error) {
