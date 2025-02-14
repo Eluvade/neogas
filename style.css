@@ -148,6 +148,39 @@ footer {
     border-radius: 12px;
     padding: 1.25rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    transform-origin: center;
+    will-change: transform, box-shadow;
+}
+
+.price-card:hover {
+    transform: scale(1.02) translateY(-2px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
+}
+
+.price-card:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Optional: Add subtle glow effect on hover */
+.price-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 12px;
+    background: linear-gradient(45deg, var(--color-primary), var(--color-secondary));
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.3s ease;
+}
+
+.price-card:hover::after {
+    opacity: 0.1;
 }
 
 .price-card .header {
