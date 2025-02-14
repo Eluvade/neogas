@@ -134,12 +134,54 @@ function updatePriceCard(symbol, price, change) {
     
     const priceElement = card.querySelector('.price');
     const changeElement = card.querySelector('.change');
-    const updatedElement = card.querySelector('.updated');
     
+    // Get the previous price from the element
+    const previousPrice = parseFloat(priceElement.textContent.replace('$', ''));
+    
+    // Update price and add animation class
     priceElement.textContent = `$${price.toFixed(3)}`;
+    
+    if (previousPrice) {
+        // Remove existing animation classes
+        priceElement.classList.remove('flash-up', 'flash-down');
+        
+        // Force a reflow to restart animation
+        void priceElement.offsetWidth;
+        
+        // Add new animation class based on price change
+        if (price > previousPrice) {
+            priceElement.classList.add('flash-up');
+        } else if (price < previousPrice) {
+            priceElement.classList.add('flash-down');
+        }
+    }
+    
     changeElement.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
     changeElement.className = `change ${change >= 0 ? 'positive' : 'negative'}`;
-    updatedElement.textContent = `Updated: ${new Date().toLocaleTimeString()}`;
+    
+    // Fetch market cap and volume
+    fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol.toUpperCase()}USDT`)
+        .then(r => r.json())
+        .then(data => {
+            const marketCap = price * (symbol === 'neo' ? 70_000_000 : 100_000_000); // Updated GAS total supply
+            const volume = parseFloat(data.volume) * price;
+            
+            card.querySelector('.market-cap').textContent = formatCurrency(marketCap);
+            card.querySelector('.volume').textContent = formatCurrency(volume);
+        });
+    
+    // Update the global last updated timestamp
+    const lastUpdated = document.querySelector('.last-updated');
+    if (lastUpdated) {
+        lastUpdated.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+    }
+}
+
+function formatCurrency(value) {
+    if (value >= 1e9) return `$${(value / 1e9).toFixed(2)}B`;
+    if (value >= 1e6) return `$${(value / 1e6).toFixed(2)}M`;
+    if (value >= 1e3) return `$${(value / 1e3).toFixed(2)}K`;
+    return `$${value.toFixed(2)}`;
 }
 
 // Call Binance REST API for NEOUSDT and GASUSDT historical data, then return ratio data

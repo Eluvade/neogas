@@ -23,6 +23,7 @@
     <meta name="apple-mobile-web-app-title" content="neogas" />
     <link rel="manifest" href="/images/site.webmanifest" />
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <header class="site-header">
@@ -32,19 +33,48 @@
     </header>
     <main>
         <div class="price-cards">
-            <div class="price-card neo">
-                <h3>NEO Price</h3>
-                <div class="price">$-.--</div>
-                <div class="change">--.---%</div>
-                <div class="updated">Updating...</div>
-            </div>
             <div class="price-card gas">
-                <h3>GAS Price</h3>
-                <div class="price">$-.--</div>
-                <div class="change">--.---%</div>
-                <div class="updated">Updating...</div>
+                <div class="header">
+                    <img src="images/gas-logo.svg" alt="GAS" class="token-icon">
+                    <h3>GAS</h3>
+                </div>
+                <div class="main-price">
+                    <div class="price">$ -.--</div>
+                    <div class="change">--.---%</div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label"><i class="fas fa-chart-pie"></i> Market Cap</div>
+                        <div class="stat-value market-cap">$ -.--</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label"><i class="fas fa-chart-line"></i> Volume (24h)</div>
+                        <div class="stat-value volume">$ -.--</div>
+                    </div>
+                </div>
+            </div>
+            <div class="price-card neo">
+                <div class="header">
+                    <img src="images/neo-logo.svg" alt="NEO" class="token-icon">
+                    <h3>NEO</h3>
+                </div>
+                <div class="main-price">
+                    <div class="price">$ -.--</div>
+                    <div class="change">--.---%</div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label"><i class="fas fa-chart-pie"></i> Market Cap</div>
+                        <div class="stat-value market-cap">$-.--</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label"><i class="fas fa-chart-line"></i> Volume (24h)</div>
+                        <div class="stat-value volume">$-.--</div>
+                    </div>
+                </div>
             </div>
         </div>
+        <div class="last-updated">Updating prices...</div>
         <div id="chart-container"></div>
         <section id="contact">
             <h2>Contact</h2>

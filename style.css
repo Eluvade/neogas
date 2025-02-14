@@ -1,11 +1,11 @@
 @import "css/colors.css";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500&family=Nunito+Sans:wght@400;500&display=swap');
 
 /* Base styles */
 body {
     color: var(--color-text);
     background-color: var(--color-background);
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     line-height: 1.6;
     margin: 0;
     padding: 0 1rem;
@@ -27,7 +27,10 @@ body {
 
 .site-title {
     font-size: clamp(1.8rem, 5vw, 2.5rem);
-    font-weight: 600;
+    font-weight: 500;
+    font-family: 'Work Sans', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
     margin: 0;
     background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
     -webkit-background-clip: text;
@@ -40,6 +43,8 @@ body {
     color: var(--color-text);
     opacity: 0.9;
     margin: 1rem 0 2rem;
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: 400;
 }
 
 #chart-container {
@@ -125,14 +130,16 @@ footer {
     padding: 2rem 1rem;
     margin-top: 3rem;
     border-top: 1px solid var(--color-tertiary);
+    font-family: 'Nunito Sans', sans-serif;
 }
 
 /* Price cards container */
 .price-cards {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1rem;
     justify-content: center;
-    margin: 0 auto 2rem;
+    margin: 0 auto 0.5rem;
     max-width: 80ch;
 }
 
@@ -140,58 +147,142 @@ footer {
     background: var(--color-tertiary);
     border-radius: 12px;
     padding: 1.25rem;
-    flex: 1;
-    min-width: 200px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease;
 }
 
-.price-card:hover {
-    transform: translateY(-2px);
+.price-card .header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
 }
 
-.price-card.neo {
-    border-left: 4px solid var(--color-primary);
-}
-
-.price-card.gas {
-    border-left: 4px solid var(--color-secondary);
+.price-card .token-icon {
+    width: 32px;
+    height: 32px;
 }
 
 .price-card h3 {
     margin: 0;
     font-size: 1.1rem;
+    font-family: 'Work Sans', sans-serif;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
     color: var(--color-text);
-    opacity: 0.9;
+}
+
+.price-card .main-price {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .price-card .price {
     font-size: 1.5rem;
     font-weight: 600;
-    margin: 0.5rem 0;
     color: var(--color-text);
+    font-family: 'Work Sans', sans-serif;
+}
+
+.price-card .price.flash-up {
+    animation: priceUp 0.6s ease-out;
+}
+
+.price-card .price.flash-down {
+    animation: priceDown 0.6s ease-out;
 }
 
 .price-card .change {
     font-size: 0.9rem;
     font-weight: 500;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-family: 'Nunito Sans', sans-serif;
+    text-transform: none;
+    letter-spacing: 0;
 }
 
 .price-card .change.positive {
-    background: rgba(0, 229, 153, 0.1);
-    color: var(--color-primary);
+    background: rgba(0, 200, 83, 0.15);
+    color: #00c853;
 }
 
 .price-card .change.negative {
-    background: rgba(255, 82, 82, 0.1);
+    background: rgba(255, 82, 82, 0.15);
     color: #ff5252;
 }
 
-.price-card .updated {
+.price-card .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.price-card .stat-item {
+    text-align: left;
+}
+
+.price-card .stat-label {
+    font-size: 0.7rem;
+    font-family: 'Work Sans', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--color-text);
+    opacity: 0.7;
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.price-card .stat-label i {
     font-size: 0.8rem;
-    margin-top: 0.5rem;
+    opacity: 0.8;
+}
+
+.price-card .stat-value {
+    font-size: 0.9rem;
+    font-weight: 500;
+    font-family: 'Nunito Sans', sans-serif;
+}
+
+.price-card .stat-value,
+.price-card .change,
+.last-updated {
+    font-family: 'Nunito Sans', sans-serif;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+/* Last updated timestamp */
+.last-updated {
+    text-align: center;
+    font-size: 0.8rem;
     opacity: 0.6;
+    margin: 0.5rem 0 2rem;
+}
+
+/* Section headers */
+section h2 {
+    font-family: 'Work Sans', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    font-weight: 500;
+}
+
+/* Price change animations */
+@keyframes priceUp {
+    0% { color: var(--color-text); }
+    30% { color: #00c853; }
+    100% { color: var(--color-text); }
+}
+
+@keyframes priceDown {
+    0% { color: var(--color-text); }
+    30% { color: #ff5252; }
+    100% { color: var(--color-text); }
 }
