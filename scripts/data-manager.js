@@ -1,189 +1,337 @@
 class DataManager {
     constructor() {
-        this.cache = new Map();
-        this.isLoading = false;
         this.callbacks = new Set();
-        this.loadingPromise = null;
-        this.currentPrices = {
-            neo: null,
-            gas: null
+        this.ws = null;
+        this.neoPrice = null;
+        this.gasPrice = null;
+        this.neo24hChange = 0;
+        this.gas24hChange = 0;
+        this.currentCandle = null;
+        this.timeframes = new Map(); // Stores { data: [], initialLoad: boolean }
+        this.currentTimeframe = '1d';
+        this.timeframeIntervals = {
+            '1m': 60,
+            '5m': 300,
+            '15m': 900,
+            '1h': 3600,
+            '4h': 14400,
+            '1d': 86400
         };
-        this.previousRatio = null;
+        this.wsConnected = false;
+        this.wsReconnectAttempts = 0;
+        this.maxReconnectAttempts = 5;
+        this.isLoadingHistoricalData = false;
     }
 
     async initialize() {
-        if (this.loadingPromise) return this.loadingPromise;
-        
-        // Fetch current prices immediately
-        this.fetchCurrentPrices();
-        
-        this.loadingPromise = (async () => {
-            try {
-                this.isLoading = true;
-                console.log('Initializing data manager...');
-                
-                // Start with daily data
-                await this.loadTimeframe('1d');
-                
-                // Load other timeframes in background
-                this.loadOtherTimeframes();
-                
-                // Start real-time updates
-                this.startRealtimeUpdates();
-            } catch (error) {
-                console.error('Failed to initialize:', error);
-                throw error;
-            } finally {
-                this.isLoading = false;
-            }
-        })();
-
-        return this.loadingPromise;
+        await this.fetchInitialData();
+        await this.loadTimeframe(this.currentTimeframe);
+        this.connectWebSocket();
     }
 
-    async loadTimeframe(interval) {
+    async fetchInitialData() {
         try {
-            const data = await this.fetchKlines(interval);
-            this.cache.set(interval, data);
-            this.notifyListeners({
-                type: 'klines',
-                interval: interval,
-                data: data
-            });
-            return data;
+            const [neoData, gasData] = await Promise.all([
+                fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=NEOUSDT'),
+                fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=GASUSDT')
+            ]);
+            
+            const neo = await neoData.json();
+            const gas = await gasData.json();
+            
+            this.neoPrice = parseFloat(neo.lastPrice);
+            this.gasPrice = parseFloat(gas.lastPrice);
+            this.neo24hChange = parseFloat(neo.priceChangePercent);
+            this.gas24hChange = parseFloat(gas.priceChangePercent);
+            
+            this.notifyPriceUpdate();
         } catch (error) {
-            console.error(`Error loading ${interval} data:`, error);
-            throw error;
+            console.error('Error fetching initial data:', error);
         }
     }
 
-    async fetchKlines(interval) {
-        const [neoData, gasData] = await Promise.all([
-            fetch(`https://api.binance.com/api/v3/klines?symbol=NEOUSDT&interval=${interval}&limit=1000`)
-                .then(r => r.json()),
-            fetch(`https://api.binance.com/api/v3/klines?symbol=GASUSDT&interval=${interval}&limit=1000`)
-                .then(r => r.json())
-        ]);
+    async loadTimeframe(timeframe) {
+        if (this.timeframes.has(timeframe)) {
+            const tfData = this.timeframes.get(timeframe);
+            if (tfData.initialLoad) return tfData.data;
+        }
 
-        return this.processKlines(neoData, gasData);
+        try {
+            const [neoKlines, gasKlines] = await Promise.all([
+                fetch(`https://api.binance.com/api/v3/klines?symbol=NEOUSDT&interval=${timeframe}&limit=1000`),
+                fetch(`https://api.binance.com/api/v3/klines?symbol=GASUSDT&interval=${timeframe}&limit=1000`)
+            ]);
+
+            const neoData = await neoKlines.json();
+            const gasData = await gasKlines.json();
+            const processedData = this.processHistoricalData(neoData, gasData);
+            
+            this.timeframes.set(timeframe, { data: processedData, initialLoad: true });
+            this.notifyHistoricalUpdate();
+            return processedData;
+        } catch (error) {
+            console.error(`Error loading ${timeframe} timeframe:`, error);
+            return [];
+        }
     }
 
-    processKlines(neoData, gasData) {
+    async loadMoreData(timeframe, endTime) {
+        const tfData = this.timeframes.get(timeframe);
+        if (!tfData || this.isLoadingHistoricalData) return;
+
+        this.isLoadingHistoricalData = true;
+        try {
+            const [neoKlines, gasKlines] = await Promise.all([
+                fetch(`https://api.binance.com/api/v3/klines?symbol=NEOUSDT&interval=${timeframe}&limit=1000&endTime=${endTime}`),
+                fetch(`https://api.binance.com/api/v3/klines?symbol=GASUSDT&interval=${timeframe}&limit=1000&endTime=${endTime}`)
+            ]);
+
+            const neoData = await neoKlines.json();
+            const gasData = await gasKlines.json();
+            const newBars = this.processHistoricalData(neoData, gasData);
+
+            if (newBars.length > 0) {
+                tfData.data = [...newBars, ...tfData.data];
+                this.notifyHistoricalUpdate();
+            }
+        } catch (error) {
+            console.error('Error loading more data:', error);
+        } finally {
+            this.isLoadingHistoricalData = false;
+        }
+    }
+
+    processHistoricalData(neoData, gasData) {
         const minLength = Math.min(neoData.length, gasData.length);
-        return Array.from({length: minLength}, (_, i) => {
+        const bars = [];
+
+        for (let i = 0; i < minLength; i++) {
             const neo = neoData[i];
             const gas = gasData[i];
-            return {
-                time: neo[0] / 1000,
+            
+            const neoPrice = parseFloat(neo[4]); // Close price
+            const gasPrice = parseFloat(gas[4]); // Close price
+            const ratio = gasPrice / neoPrice;
+
+            const timestamp = neo[0] / 1000; // Convert to seconds
+            bars.push({
+                time: timestamp,
+                value: ratio, // For area series
                 open: parseFloat(gas[1]) / parseFloat(neo[1]),
                 high: parseFloat(gas[2]) / parseFloat(neo[2]),
                 low: parseFloat(gas[3]) / parseFloat(neo[3]),
-                close: parseFloat(gas[4]) / parseFloat(neo[4]),
-                volume: parseFloat(gas[5])
+                close: ratio
+            });
+        }
+
+        return bars.sort((a, b) => a.time - b.time);
+    }
+
+    connectWebSocket() {
+        if (this.ws) {
+            this.ws.close();
+            this.ws = null;
+        }
+
+        console.log('Connecting to WebSocket...');
+        this.ws = new WebSocket('wss://stream.binance.com:9443/ws');
+
+        this.ws.onopen = () => {
+            console.log('WebSocket connected');
+            this.wsConnected = true;
+            this.wsReconnectAttempts = 0;
+            
+            // Subscribe to streams
+            const msg = JSON.stringify({
+                method: 'SUBSCRIBE',
+                params: [
+                    'neousdt@trade',
+                    'gasusdt@trade',
+                    'neousdt@ticker',
+                    'gasusdt@ticker'
+                ],
+                id: 1
+            });
+            
+            console.log('Subscribing to streams:', msg);
+            this.ws.send(msg);
+            
+            // Update status
+            this.updateConnectionStatus(true);
+        };
+
+        this.ws.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                console.log('WS message:', data.e, data.s);
+                this.handleWebSocketMessage(data);
+            } catch (error) {
+                console.error('WS message handling error:', error);
+            }
+        };
+
+        this.ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            this.wsConnected = false;
+            this.updateConnectionStatus(false);
+        };
+
+        this.ws.onclose = () => {
+            console.log('WebSocket disconnected');
+            this.wsConnected = false;
+            this.updateConnectionStatus(false);
+
+            // Implement exponential backoff
+            if (this.wsReconnectAttempts < this.maxReconnectAttempts) {
+                const delay = Math.min(1000 * Math.pow(2, this.wsReconnectAttempts), 30000);
+                this.wsReconnectAttempts++;
+                console.log(`Reconnecting in ${delay}ms (attempt ${this.wsReconnectAttempts})`);
+                setTimeout(() => this.connectWebSocket(), delay);
+            } else {
+                console.error('Max reconnection attempts reached');
+            }
+        };
+    }
+
+    updateConnectionStatus(connected) {
+        const status = document.querySelector('.last-updated');
+        if (status) {
+            status.textContent = connected ? 
+                `Connected - Last updated: ${new Date().toLocaleTimeString()}` :
+                'Disconnected - Attempting to reconnect...';
+            status.className = `last-updated ${connected ? 'connected' : 'disconnected'}`;
+        }
+    }
+
+    handleWebSocketMessage(data) {
+        if (data.e === '24hrTicker') {
+            this.handle24hTicker(data);
+        } else if (data.e === 'trade') {
+            this.handleTrade(data);
+        }
+    }
+
+    handle24hTicker(data) {
+        if (data.s === 'NEOUSDT') {
+            this.neo24hChange = parseFloat(data.P);
+        } else if (data.s === 'GASUSDT') {
+            this.gas24hChange = parseFloat(data.P);
+        }
+        this.notifyPriceUpdate();
+    }
+
+    handleTrade(data) {
+        const price = parseFloat(data.p);
+        const time = Math.floor(data.T / 1000);
+
+        if (data.s === 'NEOUSDT') {
+            this.neoPrice = price;
+        } else if (data.s === 'GASUSDT') {
+            this.gasPrice = price;
+        }
+
+        if (this.neoPrice && this.gasPrice) {
+            const ratio = this.gasPrice / this.neoPrice;
+            this.updateCurrentCandle(time, ratio);
+            this.updateCurrentTimeframe(ratio, time);
+            this.notifyPriceUpdate();
+        }
+    }
+
+    updateCurrentCandle(time, ratio) {
+        if (!this.currentCandle || time >= this.currentCandle.time + 60) {
+            if (this.currentCandle) {
+                const tfData = this.timeframes.get(this.currentTimeframe);
+                if (tfData) {
+                    tfData.data.push(this.currentCandle);
+                    this.notifyHistoricalUpdate();
+                }
+            }
+            this.currentCandle = {
+                time,
+                open: ratio,
+                high: ratio,
+                low: ratio,
+                close: ratio
             };
-        });
-    }
-
-    async loadOtherTimeframes() {
-        const timeframes = ['1m', '5m', '15m', '1h', '4h'];
-        for (const interval of timeframes) {
-            await this.loadTimeframe(interval).catch(console.error);
+        } else {
+            this.currentCandle.high = Math.max(this.currentCandle.high, ratio);
+            this.currentCandle.low = Math.min(this.currentCandle.low, ratio);
+            this.currentCandle.close = ratio;
         }
     }
 
-    startRealtimeUpdates() {
-        // Update current prices every 5 seconds
-        setInterval(() => {
-            if (!this.isLoading) {
-                this.fetchCurrentPrices();
-            }
-        }, 5000);
+    updateCurrentTimeframe(ratio, timestamp) {
+        const interval = this.timeframeIntervals[this.currentTimeframe];
+        const normalizedTime = Math.floor(timestamp / interval) * interval;
 
-        // Update timeframe data every minute
-        setInterval(() => {
-            if (!this.isLoading) {
-                this.loadTimeframe('1m').catch(console.error);
-            }
-        }, 60000);
+        const tfData = this.timeframes.get(this.currentTimeframe);
+        if (!tfData) return;
+
+        let data = tfData.data;
+        let lastBar = data[data.length - 1];
+
+        if (!lastBar || lastBar.time < normalizedTime) {
+            // Create new bar
+            lastBar = {
+                time: normalizedTime,
+                open: ratio,
+                high: ratio,
+                low: ratio,
+                close: ratio
+            };
+            data.push(lastBar);
+        } else {
+            // Update existing bar
+            lastBar.high = Math.max(lastBar.high, ratio);
+            lastBar.low = Math.min(lastBar.low, ratio);
+            lastBar.close = ratio;
+        }
+
+        this.notifyHistoricalUpdate();
     }
 
-    async fetchCurrentPrices() {
+    getData(timeframe = null) {
+        const tf = timeframe || this.currentTimeframe;
+        const tfData = this.timeframes.get(tf);
+        return tfData ? tfData.data : [];
+    }
+
+    async changeTimeframe(timeframe) {
+        if (!this.timeframeIntervals[timeframe]) {
+            throw new Error(`Invalid timeframe: ${timeframe}`);
+        }
+
         try {
-            const [neoPrice, gasPrice] = await Promise.all([
-                fetch('https://api.binance.com/api/v3/ticker/price?symbol=NEOUSDT')
-                    .then(r => r.json()),
-                fetch('https://api.binance.com/api/v3/ticker/price?symbol=GASUSDT')
-                    .then(r => r.json())
-            ]);
-            
-            const neo = parseFloat(neoPrice.price);
-            const gas = parseFloat(gasPrice.price);
-            
-            // Calculate ratio immediately
-            const ratio = gas / neo;
-            const percentChange = this.previousRatio 
-            ? ((ratio - this.previousRatio) / this.previousRatio) * 100 
-            : 0;
-            
-            // Update all values atomically
-            this.currentPrices = { neo, gas };
-            this.previousRatio = ratio;
-
-            // Notify with a single update containing all information
-            this.notifyListeners({
-                type: 'initial_prices',  // New update type for initial load
-                neo,
-                gas,
-                ratio,
-                percentChange
-            });
-
-            return this.currentPrices;
+            this.currentTimeframe = timeframe;
+            await this.loadTimeframe(timeframe);
+            this.notifyHistoricalUpdate();
         } catch (error) {
-            console.error('Error fetching current prices:', error);
-            return null;
+            console.error(`Error changing timeframe: ${error.message}`);
+            this.currentTimeframe = '1d';
+            this.notifyHistoricalUpdate();
         }
     }
 
-    updatePrice(token, price) {
-        // This method is now only used for real-time updates
-        this.currentPrices[token] = price;
-        
-        if (this.currentPrices.neo && this.currentPrices.gas) {
-            const ratio = this.currentPrices.gas / this.currentPrices.neo;
-            const percentChange = this.previousRatio 
-                ? ((ratio - this.previousRatio) / this.previousRatio) * 100 
-                : 0;
-            
-            this.notifyListeners({
-                type: 'price',
-                token,
-                price,
-                ratio,
-                percentChange
-            });
-            
-            this.previousRatio = ratio;
-        }
-    }
-
-    getData(interval) {
-        return this.cache.get(interval) || [];
-    }
-
-    onUpdate(callback) {
+    onPriceUpdate(callback) {
         this.callbacks.add(callback);
         return () => this.callbacks.delete(callback);
     }
 
-    notifyListeners(update) {
-        this.callbacks.forEach(callback => {
-            try {
-                callback(update);
-            } catch (error) {
-                console.error('Error in update callback:', error);
-            }
-        });
+    notifyPriceUpdate() {
+        const data = {
+            neo: { price: this.neoPrice, change: this.neo24hChange },
+            gas: { price: this.gasPrice, change: this.gas24hChange },
+            ratio: this.gasPrice / this.neoPrice
+        };
+        this.callbacks.forEach(callback => callback(data));
+    }
+
+    notifyHistoricalUpdate() {
+        const data = this.getData();
+        window.dispatchEvent(new CustomEvent('historicalUpdate', {
+            detail: { data }
+        }));
     }
 }
 

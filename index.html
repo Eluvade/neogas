@@ -26,6 +26,52 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
+    <style>
+        .error-message {
+            color: #ef5350;
+            padding: 10px;
+            text-align: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            border-radius: 4px;
+        }
+        .last-updated.connected {
+            color: #26a69a;
+        }
+        .last-updated.disconnected {
+            color: #ef5350;
+        }
+        #chart-container {
+            width: 100%;
+            height: 500px;
+            margin: 20px 0;
+        }
+        .timeframe-buttons {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 100;
+            display: flex;
+            gap: 5px;
+        }
+        .timeframe-button {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #26a69a;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .timeframe-button.active {
+            background: #26a69a;
+        }
+        .timeframe-button:hover {
+            background: rgba(38, 166, 154, 0.3);
+        }
+    </style>
 </head>
 <body>
     <header class="site-header">
@@ -87,7 +133,16 @@
             </div>
         </div>
         <div class="last-updated">Updating prices...</div>
-        <div id="chart-container"></div>
+        <div id="chart-container">
+            <div class="timeframe-buttons">
+                <button class="timeframe-button" data-timeframe="1m">1m</button>
+                <button class="timeframe-button" data-timeframe="5m">5m</button>
+                <button class="timeframe-button" data-timeframe="15m">15m</button>
+                <button class="timeframe-button" data-timeframe="1h">1h</button>
+                <button class="timeframe-button" data-timeframe="4h">4h</button>
+                <button class="timeframe-button active" data-timeframe="1d">1D</button>
+            </div>
+        </div>
         <section id="contact">
             <h2>Contact</h2>
             <p>... <a href="mailto:bunny.eluvade@gmail.com">bunny.eluvade@gmail.com</a></p>
@@ -101,10 +156,18 @@
             Copyright (c) 2025 TradingView, Inc.
         </p>
     </footer>
+    <script>
+        // Add before other scripts to verify loading
+        let chartLibraryLoaded = false;
+        function onChartLibraryLoaded() {
+            chartLibraryLoaded = true;
+            window.dispatchEvent(new Event('chartLibraryLoaded'));
+        }
+    </script>
     <script 
-        src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.development.js"
+        src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"
+        onload="onChartLibraryLoaded()"
         crossorigin="anonymous"
-        referrerpolicy="no-referrer"
     ></script>
     <script src="scripts/data-manager.js"></script>
     <script src="scripts/binance-client.js"></script>
