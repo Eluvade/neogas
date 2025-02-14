@@ -25,11 +25,26 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>GAS/NEO Ratio Chart</h1>
-        <p>Track the real-time price ratio between GAS and NEO tokens</p>
+    <header class="site-header">
+        <img src="images/neo-logo.svg" alt="NEO Logo" class="site-logo">
+        <h1 class="site-title">GAS/NEO Ratio Chart</h1>
+        <p class="site-description">Track the real-time price ratio between GAS and NEO tokens</p>
     </header>
     <main>
+        <div class="price-cards">
+            <div class="price-card neo">
+                <h3>NEO Price</h3>
+                <div class="price">$-.--</div>
+                <div class="change">--.---%</div>
+                <div class="updated">Updating...</div>
+            </div>
+            <div class="price-card gas">
+                <h3>GAS Price</h3>
+                <div class="price">$-.--</div>
+                <div class="change">--.---%</div>
+                <div class="updated">Updating...</div>
+            </div>
+        </div>
         <div id="chart-container"></div>
         <section id="contact">
             <h2>Contact</h2>

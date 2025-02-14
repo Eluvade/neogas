@@ -1,50 +1,117 @@
+// Add this function at the top
+async function fetchInitialPrices() {
+    try {
+        const [neoData, gasData] = await Promise.all([
+            fetch('https://api.binance.com/api/v3/ticker/price?symbol=NEOUSDT'),
+            fetch('https://api.binance.com/api/v3/ticker/price?symbol=GASUSDT')
+        ]);
+        const neo = await neoData.json();
+        const gas = await gasData.json();
+        return {
+            neo: parseFloat(neo.price),
+            gas: parseFloat(gas.price)
+        };
+    } catch (error) {
+        console.error('Error fetching initial prices:', error);
+        return null;
+    }
+}
+
 // Calculate ratio and call onData({ time, value })
 
 // Connect to Binance WebSocket streams for NEOUSDT and GASUSDT
 function connectWebSocket(onData) {
+    // Get initial prices immediately
+    fetchInitialPrices().then(prices => {
+        if (prices) {
+            neoPrice = prices.neo;
+            gasPrice = prices.gas;
+            updatePriceCard('neo', prices.neo, neo24hChange);
+            updatePriceCard('gas', prices.gas, gas24hChange);
+        }
+    });
+
     const ws = new WebSocket('wss://stream.binance.com:9443/ws');
     let neoPrice = null;
     let gasPrice = null;
     let currentCandle = null;
     
+    // Add price tracking variables
+    let neo24hChange = 0;
+    let gas24hChange = 0;
+    
+    // Get initial 24h change
+    fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=NEOUSDT')
+        .then(r => r.json())
+        .then(data => neo24hChange = parseFloat(data.priceChangePercent));
+    fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=GASUSDT')
+        .then(r => r.json())
+        .then(data => gas24hChange = parseFloat(data.priceChangePercent));
+    
     ws.onopen = () => {
         console.log('WebSocket connected');
         ws.send(JSON.stringify({
             method: 'SUBSCRIBE',
-            params: ['neousdt@trade', 'gasusdt@trade'],
+            params: [
+                'neousdt@trade',
+                'gasusdt@trade',
+                'neousdt@ticker',
+                'gasusdt@ticker'
+            ],
             id: 1
         }));
     };
     
     ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        if (!data.p) return;
         
-        const price = parseFloat(data.p);
-        const time = Math.floor(data.T / 1000);
+        // Handle ticker updates (24h price change)
+        if (data.e === '24hrTicker') {
+            if (data.s === 'NEOUSDT') {
+                neo24hChange = parseFloat(data.P);
+                updatePriceCard('neo', neoPrice, neo24hChange);
+            }
+            if (data.s === 'GASUSDT') {
+                gas24hChange = parseFloat(data.P);
+                updatePriceCard('gas', gasPrice, gas24hChange);
+            }
+            return;
+        }
         
-        if (data.s === 'NEOUSDT') neoPrice = price;
-        if (data.s === 'GASUSDT') gasPrice = price;
-        
-        if (neoPrice && gasPrice) {
-            const ratio = gasPrice / neoPrice;
+        // Handle trade updates
+        if (data.p) {
+            const price = parseFloat(data.p);
+            const time = Math.floor(data.T / 1000);
             
-            if (!currentCandle || time >= currentCandle.time + 60) {
-                if (currentCandle) {
-                    onData(currentCandle);
+            if (data.s === 'NEOUSDT') {
+                neoPrice = price;
+                updatePriceCard('neo', price, neo24hChange);
+            }
+            if (data.s === 'GASUSDT') {
+                gasPrice = price;
+                updatePriceCard('gas', price, gas24hChange);
+            }
+            
+            if (neoPrice && gasPrice) {
+                const ratio = gasPrice / neoPrice;
+                
+                if (!currentCandle || time >= currentCandle.time + 60) {
+                    if (currentCandle) {
+                        onData(currentCandle);
+                    }
+                    currentCandle = {
+                        time,
+                        open: ratio,
+                        high: ratio,
+                        low: ratio,
+                        close: ratio,
+                        volume: 0
+                    };
+                } else {
+                    currentCandle.high = Math.max(currentCandle.high, ratio);
+                    currentCandle.low = Math.min(currentCandle.low, ratio);
+                    currentCandle.close = ratio;
                 }
-                currentCandle = {
-                    time,
-                    open: ratio,
-                    high: ratio,
-                    low: ratio,
-                    close: ratio,
-                    volume: 0
-                };
-            } else {
-                currentCandle.high = Math.max(currentCandle.high, ratio);
-                currentCandle.low = Math.min(currentCandle.low, ratio);
-                currentCandle.close = ratio;
             }
         }
     };
@@ -57,6 +124,22 @@ function connectWebSocket(onData) {
         console.log('WebSocket disconnected, reconnecting...');
         setTimeout(() => connectWebSocket(onData), 1000);
     };
+}
+
+function updatePriceCard(symbol, price, change) {
+    if (!price) return;
+    
+    const card = document.querySelector(`.price-card.${symbol}`);
+    if (!card) return;
+    
+    const priceElement = card.querySelector('.price');
+    const changeElement = card.querySelector('.change');
+    const updatedElement = card.querySelector('.updated');
+    
+    priceElement.textContent = `$${price.toFixed(3)}`;
+    changeElement.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
+    changeElement.className = `change ${change >= 0 ? 'positive' : 'negative'}`;
+    updatedElement.textContent = `Updated: ${new Date().toLocaleTimeString()}`;
 }
 
 // Call Binance REST API for NEOUSDT and GASUSDT historical data, then return ratio data
