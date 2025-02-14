@@ -91,7 +91,7 @@ body {
 }
 
 .ratio-value.flash-update {
-    animation: flash-update 0.5s ease-out;
+    animation: flash-update 0.66s ease-out;
 }
 
 @keyframes flash-update {
@@ -281,11 +281,11 @@ footer {
 }
 
 .price-card .price.flash-up {
-    animation: priceUp 0.6s ease-out;
+    animation: priceUp 1.32s ease-out;
 }
 
 .price-card .price.flash-down {
-    animation: priceDown 0.6s ease-out;
+    animation: priceDown 1s ease-out;
 }
 
 .price-card .change {

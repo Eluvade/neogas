@@ -1,8 +1,13 @@
 {
-  "name": "gasneo-ratio",
+  "name": "neogas",
   "version": "1.0.0",
   "description": "A simple web application to calculate the GAS/NEO ratio",
+  "homepage": "https://neogas.eluvade.com",
   "main": "index.html",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Eluvade/neogas"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "live-server ."
@@ -68,6 +73,9 @@
     "lending",
     "borrowing"
   ],
-  "author": "Bunny Eluvade",
+  "author": {
+    "name": "Bunny Eluvade",
+    "url": "https://eluvade.com"
+  },
   "license": "MIT"
 }

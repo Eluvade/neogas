@@ -4,10 +4,18 @@ class DataManager {
         this.isLoading = false;
         this.callbacks = new Set();
         this.loadingPromise = null;
+        this.currentPrices = {
+            neo: null,
+            gas: null
+        };
+        this.previousRatio = null;
     }
 
     async initialize() {
         if (this.loadingPromise) return this.loadingPromise;
+        
+        // Fetch current prices immediately
+        this.fetchCurrentPrices();
         
         this.loadingPromise = (async () => {
             try {
@@ -37,7 +45,11 @@ class DataManager {
         try {
             const data = await this.fetchKlines(interval);
             this.cache.set(interval, data);
-            this.notifyListeners();
+            this.notifyListeners({
+                type: 'klines',
+                interval: interval,
+                data: data
+            });
             return data;
         } catch (error) {
             console.error(`Error loading ${interval} data:`, error);
@@ -80,11 +92,65 @@ class DataManager {
     }
 
     startRealtimeUpdates() {
+        // Update current prices every 5 seconds
+        setInterval(() => {
+            if (!this.isLoading) {
+                this.fetchCurrentPrices();
+            }
+        }, 5000);
+
+        // Update timeframe data every minute
         setInterval(() => {
             if (!this.isLoading) {
                 this.loadTimeframe('1m').catch(console.error);
             }
         }, 60000);
+    }
+
+    updatePrice(token, price) {
+        this.currentPrices[token] = price;
+        
+        if (this.currentPrices.neo && this.currentPrices.gas) {
+            const ratio = this.currentPrices.gas / this.currentPrices.neo;
+            const percentChange = this.previousRatio 
+                ? ((ratio - this.previousRatio) / this.previousRatio) * 100 
+                : 0;
+            
+            this.notifyListeners({
+                type: 'price',
+                token,
+                price,
+                ratio,
+                percentChange
+            });
+            
+            this.previousRatio = ratio;
+        } else {
+            this.notifyListeners({
+                type: 'price',
+                token,
+                price
+            });
+        }
+    }
+
+    async fetchCurrentPrices() {
+        try {
+            const [neoPrice, gasPrice] = await Promise.all([
+                fetch('https://api.binance.com/api/v3/ticker/price?symbol=NEOUSDT')
+                    .then(r => r.json()),
+                fetch('https://api.binance.com/api/v3/ticker/price?symbol=GASUSDT')
+                    .then(r => r.json())
+            ]);
+            
+            this.updatePrice('neo', parseFloat(neoPrice.price));
+            this.updatePrice('gas', parseFloat(gasPrice.price));
+            
+            return this.currentPrices;
+        } catch (error) {
+            console.error('Error fetching current prices:', error);
+            return null;
+        }
     }
 
     getData(interval) {
@@ -96,8 +162,14 @@ class DataManager {
         return () => this.callbacks.delete(callback);
     }
 
-    notifyListeners() {
-        this.callbacks.forEach(callback => callback());
+    notifyListeners(update) {
+        this.callbacks.forEach(callback => {
+            try {
+                callback(update);
+            } catch (error) {
+                console.error('Error in update callback:', error);
+            }
+        });
     }
 }
 

@@ -160,20 +160,52 @@ document.addEventListener('DOMContentLoaded', async function() {
         series.update(latestRatio);
     });
 
-    // Add live ratio update handler
+    // Price update handlers
+    const gasPrice = document.querySelector('.gas .price');
+    const neoPrice = document.querySelector('.neo .price');
     const ratioDisplay = document.getElementById('live-ratio');
     
-    function updateRatio(ratio) {
-        ratioDisplay.textContent = ratio.toFixed(4);
-        ratioDisplay.classList.remove('flash-update');
-        void ratioDisplay.offsetWidth; // Force reflow
-        ratioDisplay.classList.add('flash-update');
+    function updatePrice(element, price) {
+        element.textContent = `$ ${price.toFixed(2)}`;
+        element.classList.remove('flash-update');
+        void element.offsetWidth; // Force reflow
+        element.classList.add('flash-update');
     }
 
-    // Subscribe to WebSocket updates
-    connectWebSocket(data => {
-        if (data && data.close) {
-            updateRatio(data.close);
+    function updateRatio(ratio, percentChange) {
+        const formattedRatio = ratio.toFixed(4);
+        const arrow = percentChange >= 0 ? '▲' : '▼';
+        const formattedChange = Math.abs(percentChange).toFixed(2);
+        
+        // Update ratio display
+        ratioDisplay.textContent = formattedRatio;
+        ratioDisplay.classList.remove('flash-update');
+        void ratioDisplay.offsetWidth;
+        ratioDisplay.classList.add('flash-update');
+        
+        // Update document title
+        document.title = `GASNEO ${formattedRatio} ${arrow} ${formattedChange}% Ratio Ticker`;
+    }
+
+    // Subscribe to all data updates
+    window.dataManager.onUpdate(update => {
+        if (update.type === 'price') {
+            // Update individual token prices
+            if (update.token === 'gas') {
+                updatePrice(gasPrice, update.price);
+            } else if (update.token === 'neo') {
+                updatePrice(neoPrice, update.price);
+            }
+            
+            // If ratio is available, update it
+            if (update.ratio !== undefined) {
+                updateRatio(update.ratio, update.percentChange || 0);
+            }
+        } else if (update.type === 'klines' && update.interval === currentInterval) {
+            series.setData(update.data);
         }
     });
+
+    // Initialize immediately
+    window.dataManager.initialize();
 });
