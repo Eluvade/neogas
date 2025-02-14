@@ -139,7 +139,7 @@ function updatePriceCard(symbol, price, change) {
     const previousPrice = parseFloat(priceElement.textContent.replace('$', ''));
     
     // Update price and add animation class
-    priceElement.textContent = `$${price.toFixed(3)}`;
+    priceElement.textContent = `$ ${price.toFixed(3)}`;
     
     if (previousPrice) {
         // Remove existing animation classes
@@ -178,10 +178,10 @@ function updatePriceCard(symbol, price, change) {
 }
 
 function formatCurrency(value) {
-    if (value >= 1e9) return `$${(value / 1e9).toFixed(2)}B`;
-    if (value >= 1e6) return `$${(value / 1e6).toFixed(2)}M`;
-    if (value >= 1e3) return `$${(value / 1e3).toFixed(2)}K`;
-    return `$${value.toFixed(2)}`;
+    if (value >= 1e9) return `$ ${(value / 1e9).toFixed(2)}B`;
+    if (value >= 1e6) return `$ ${(value / 1e6).toFixed(2)}M`;
+    if (value >= 1e3) return `$ ${(value / 1e3).toFixed(2)}K`;
+    return `$ ${value.toFixed(2)}`;
 }
 
 // Call Binance REST API for NEOUSDT and GASUSDT historical data, then return ratio data
