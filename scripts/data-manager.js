@@ -107,7 +107,46 @@ class DataManager {
         }, 60000);
     }
 
+    async fetchCurrentPrices() {
+        try {
+            const [neoPrice, gasPrice] = await Promise.all([
+                fetch('https://api.binance.com/api/v3/ticker/price?symbol=NEOUSDT')
+                    .then(r => r.json()),
+                fetch('https://api.binance.com/api/v3/ticker/price?symbol=GASUSDT')
+                    .then(r => r.json())
+            ]);
+            
+            const neo = parseFloat(neoPrice.price);
+            const gas = parseFloat(gasPrice.price);
+            
+            // Calculate ratio immediately
+            const ratio = gas / neo;
+            const percentChange = this.previousRatio 
+            ? ((ratio - this.previousRatio) / this.previousRatio) * 100 
+            : 0;
+            
+            // Update all values atomically
+            this.currentPrices = { neo, gas };
+            this.previousRatio = ratio;
+
+            // Notify with a single update containing all information
+            this.notifyListeners({
+                type: 'initial_prices',  // New update type for initial load
+                neo,
+                gas,
+                ratio,
+                percentChange
+            });
+
+            return this.currentPrices;
+        } catch (error) {
+            console.error('Error fetching current prices:', error);
+            return null;
+        }
+    }
+
     updatePrice(token, price) {
+        // This method is now only used for real-time updates
         this.currentPrices[token] = price;
         
         if (this.currentPrices.neo && this.currentPrices.gas) {
@@ -125,31 +164,6 @@ class DataManager {
             });
             
             this.previousRatio = ratio;
-        } else {
-            this.notifyListeners({
-                type: 'price',
-                token,
-                price
-            });
-        }
-    }
-
-    async fetchCurrentPrices() {
-        try {
-            const [neoPrice, gasPrice] = await Promise.all([
-                fetch('https://api.binance.com/api/v3/ticker/price?symbol=NEOUSDT')
-                    .then(r => r.json()),
-                fetch('https://api.binance.com/api/v3/ticker/price?symbol=GASUSDT')
-                    .then(r => r.json())
-            ]);
-            
-            this.updatePrice('neo', parseFloat(neoPrice.price));
-            this.updatePrice('gas', parseFloat(gasPrice.price));
-            
-            return this.currentPrices;
-        } catch (error) {
-            console.error('Error fetching current prices:', error);
-            return null;
         }
     }
 
