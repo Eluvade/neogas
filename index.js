@@ -159,4 +159,21 @@ document.addEventListener('DOMContentLoaded', async function() {
     connectWebSocket(latestRatio => {
         series.update(latestRatio);
     });
+
+    // Add live ratio update handler
+    const ratioDisplay = document.getElementById('live-ratio');
+    
+    function updateRatio(ratio) {
+        ratioDisplay.textContent = ratio.toFixed(4);
+        ratioDisplay.classList.remove('flash-update');
+        void ratioDisplay.offsetWidth; // Force reflow
+        ratioDisplay.classList.add('flash-update');
+    }
+
+    // Subscribe to WebSocket updates
+    connectWebSocket(data => {
+        if (data && data.close) {
+            updateRatio(data.close);
+        }
+    });
 });

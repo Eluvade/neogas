@@ -16,7 +16,6 @@ class DataManager {
                 
                 // Start with daily data
                 await this.loadTimeframe('1d');
-                console.log('Daily data loaded');
                 
                 // Load other timeframes in background
                 this.loadOtherTimeframes();
@@ -36,7 +35,6 @@ class DataManager {
 
     async loadTimeframe(interval) {
         try {
-            console.log(`Loading ${interval} data...`);
             const data = await this.fetchKlines(interval);
             this.cache.set(interval, data);
             this.notifyListeners();

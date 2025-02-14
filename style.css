@@ -13,38 +13,96 @@ body {
 
 /* Header styles */
 .site-header {
-    text-align: center;
-    padding: 2rem 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 0.75rem;
+    backdrop-filter: blur(10px);
+    background: rgba(19, 20, 27, 0.8);
+    border-bottom: 1px solid var(--color-tertiary);
+}
+
+.header-content {
     max-width: 80ch;
     margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.logo-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
 
 .site-logo {
-    width: 60px;
-    height: auto;
-    margin-bottom: 1rem;
+    width: 28px;
+    height: 28px;
+    opacity: 0.8;
+    margin: 0;
 }
 
-.site-title {
-    font-size: clamp(1.8rem, 5vw, 2.5rem);
+.logo-title h1 {
+    font-size: 1.5rem;
+    margin: 0;
     font-weight: 500;
     font-family: 'Work Sans', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-    margin: 0;
     background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
-.site-description {
-    font-size: clamp(1rem, 2.5vw, 1.2rem);
+.ratio-badge {
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.35rem 0.75rem;
+    background: var(--color-quaternary);
+    border-radius: 20px;
     color: var(--color-text);
-    opacity: 0.9;
-    margin: 1rem 0 2rem;
-    font-family: 'Nunito Sans', sans-serif;
-    font-weight: 400;
+    font-family: 'Work Sans', sans-serif;
+    letter-spacing: 0.02em;
+}
+
+.ratio-display {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.ratio-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text);
+    opacity: 0.7;
+    font-family: 'Work Sans', sans-serif;
+}
+
+.ratio-value {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 500;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.ratio-value.flash-update {
+    animation: flash-update 0.5s ease-out;
+}
+
+@keyframes flash-update {
+    0% { opacity: 0.5; transform: scale(0.95); }
+    50% { opacity: 1; transform: scale(1.05); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+/* Remove old header styles */
+.site-title, .site-description {
+    display: none;
 }
 
 #chart-container {
@@ -139,8 +197,9 @@ footer {
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1rem;
     justify-content: center;
-    margin: 0 auto 0.5rem;
+    margin: 2rem auto 0.5rem;  /* Increased top margin from 0 to 2rem */
     max-width: 80ch;
+    padding-top: 0.5rem;  /* Additional padding to ensure clean separation */
 }
 
 .price-card {
