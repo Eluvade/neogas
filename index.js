@@ -179,3 +179,16 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
 });
+
+function toggleDonationCard() {
+    const donationBody = document.querySelector('.donation-body');
+    donationBody.classList.toggle('expanded');
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        // alert('Address copied to clipboard!');
+    }).catch(() => {
+        // alert('Failed to copy address.');
+    });
+}

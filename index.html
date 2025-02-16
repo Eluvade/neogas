@@ -41,7 +41,7 @@
 <body>
     <header class="site-header">
         <div class="header-content">
-            <img src="images/neo-logo.svg" alt="NEO Logo" class="site-logo">
+            <img src="images/neo.svg" alt="NEO Logo" class="site-logo">
             <div class="ratio-display">
                 <div class="ratio-label">GAS/NEO</div>
                 <div class="ratio-value" id="live-ratio">-.----</div>
@@ -59,7 +59,7 @@
         <div class="price-cards">
             <div class="price-card gas">
                 <div class="header">
-                    <img src="images/gas-logo.svg" alt="GAS" class="token-icon">
+                    <img src="images/gas.svg" alt="GAS" class="token-icon">
                     <h3>GAS</h3>
                 </div>
                 <div class="main-price">
@@ -79,7 +79,7 @@
             </div>
             <div class="price-card neo">
                 <div class="header">
-                    <img src="images/neo-logo.svg" alt="NEO" class="token-icon">
+                    <img src="images/neo.svg" alt="NEO" class="token-icon">
                     <h3>NEO</h3>
                 </div>
                 <div class="main-price">
@@ -107,6 +107,46 @@
                 <button class="timeframe-button" data-timeframe="1h">1h</button>
                 <button class="timeframe-button" data-timeframe="4h">4h</button>
                 <button class="timeframe-button active" data-timeframe="1d">1D</button>
+            </div>
+        </div>
+        <div class="donation-card">
+            <div class="donation-header" onclick="toggleDonationCard()">
+                <span>Support Me</span>
+                <i class="fas fa-heart"></i>
+            </div>
+            <div class="donation-body">
+                <div class="donation-address">
+                    <img src="images/neo.svg" alt="NEO Logo" class="crypto-icon">
+                    <span class="crypto-name">NEO (N3):</span>
+                    <span class="crypto-address">N3AddressHere</span>
+                    <button class="copy-button" onclick="copyToClipboard('N3AddressHere')">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+                <div class="donation-address">
+                    <img src="images/bitcoin.svg" alt="BTC Logo" class="crypto-icon">
+                    <span class="crypto-name">Bitcoin (BTC):</span>
+                    <span class="crypto-address">BTCAddressHere</span>
+                    <button class="copy-button" onclick="copyToClipboard('BTCAddressHere')">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+                <div class="donation-address">
+                    <img src="images/ethereum.svg" alt="ETH Logo" class="crypto-icon">
+                    <span class="crypto-name">Ethereum (ETH):</span>
+                    <span class="crypto-address">ETHAddressHere</span>
+                    <button class="copy-button" onclick="copyToClipboard('ETHAddressHere')">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+                <div class="donation-address">
+                    <img src="images/solana.svg" alt="SOL Logo" class="crypto-icon">
+                    <span class="crypto-name">Solana (SOL):</span>
+                    <span class="crypto-address">SOLAddressHere</span>
+                    <button class="copy-button" onclick="copyToClipboard('SOLAddressHere')">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
             </div>
         </div>
         <section id="contact" class="contact-section">
