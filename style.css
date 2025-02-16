@@ -11,6 +11,15 @@ body {
     padding: 0 1rem;
 }
 
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
 /* Header styles */
 .site-header {
     position: sticky;
