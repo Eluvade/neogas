@@ -21,6 +21,8 @@ class DataManager {
         this.wsReconnectAttempts = 0;
         this.maxReconnectAttempts = 5;
         this.isLoadingHistoricalData = false;
+        this.neoVolume = 0;
+        this.gasVolume = 0;
     }
 
     async initialize() {
@@ -43,6 +45,8 @@ class DataManager {
             this.gasPrice = parseFloat(gas.lastPrice);
             this.neo24hChange = parseFloat(neo.priceChangePercent);
             this.gas24hChange = parseFloat(gas.priceChangePercent);
+            this.neoVolume = parseFloat(neo.volume);
+            this.gasVolume = parseFloat(gas.volume);
             
             this.notifyPriceUpdate();
         } catch (error) {
@@ -109,18 +113,14 @@ class DataManager {
             const neo = neoData[i];
             const gas = gasData[i];
             
-            const neoPrice = parseFloat(neo[4]); // Close price
-            const gasPrice = parseFloat(gas[4]); // Close price
-            const ratio = gasPrice / neoPrice;
+            const neoClose = parseFloat(neo[4]); // Close price
+            const gasClose = parseFloat(gas[4]); // Close price
+            const ratio = gasClose / neoClose;
 
-            const timestamp = neo[0] / 1000; // Convert to seconds
+            const timestamp = Math.floor(neo[0] / 1000); // Convert to seconds
             bars.push({
                 time: timestamp,
-                value: ratio, // For area series
-                open: parseFloat(gas[1]) / parseFloat(neo[1]),
-                high: parseFloat(gas[2]) / parseFloat(neo[2]),
-                low: parseFloat(gas[3]) / parseFloat(neo[3]),
-                close: ratio
+                value: ratio // Only need time and value for area series
             });
         }
 
@@ -163,7 +163,6 @@ class DataManager {
         this.ws.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
-                console.log('WS message:', data.e, data.s);
                 this.handleWebSocketMessage(data);
             } catch (error) {
                 console.error('WS message handling error:', error);
@@ -275,17 +274,12 @@ class DataManager {
             // Create new bar
             lastBar = {
                 time: normalizedTime,
-                open: ratio,
-                high: ratio,
-                low: ratio,
-                close: ratio
+                value: ratio // Changed from OHLC to simple value for area series
             };
             data.push(lastBar);
         } else {
             // Update existing bar
-            lastBar.high = Math.max(lastBar.high, ratio);
-            lastBar.low = Math.min(lastBar.low, ratio);
-            lastBar.close = ratio;
+            lastBar.value = ratio; // Just update the value
         }
 
         this.notifyHistoricalUpdate();
@@ -320,8 +314,16 @@ class DataManager {
 
     notifyPriceUpdate() {
         const data = {
-            neo: { price: this.neoPrice, change: this.neo24hChange },
-            gas: { price: this.gasPrice, change: this.gas24hChange },
+            neo: { 
+                price: this.neoPrice, 
+                change: this.neo24hChange,
+                volume: this.neoVolume 
+            },
+            gas: { 
+                price: this.gasPrice, 
+                change: this.gas24hChange,
+                volume: this.gasVolume
+            },
             ratio: this.gasPrice / this.neoPrice
         };
         this.callbacks.forEach(callback => callback(data));

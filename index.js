@@ -4,11 +4,25 @@ document.addEventListener('DOMContentLoaded', async function() {
     let chart, series;
 
     async function waitForChartLibrary() {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             if (window.LightweightCharts) {
                 resolve();
             } else {
-                window.addEventListener('chartLibraryLoaded', () => resolve());
+                // Listen for the library to load
+                window.addEventListener('chartLibraryLoaded', () => {
+                    if (window.LightweightCharts) {
+                        resolve();
+                    } else {
+                        reject(new Error('LightweightCharts library failed to load.'));
+                    }
+                });
+
+                // Set a timeout to handle cases where the library fails to load
+                setTimeout(() => {
+                    if (!window.LightweightCharts) {
+                        reject(new Error('LightweightCharts library failed to load within the expected time.'));
+                    }
+                }, 5000); // 5-second timeout
             }
         });
     }
@@ -16,12 +30,19 @@ document.addEventListener('DOMContentLoaded', async function() {
     async function initializeChart() {
         try {
             await waitForChartLibrary();
-            console.log('Creating chart with library version:', window.LightweightCharts.version());
 
+            // Ensure the library is available
+            if (!window.LightweightCharts || !window.LightweightCharts.createChart) {
+                throw new Error('LightweightCharts library is not available.');
+            }
+
+            // Set up the chart container
+            chartContainer.style.width = '100%';
             chartContainer.style.position = 'relative';
             chartContainer.style.height = '500px';
 
-            chart = window.LightweightCharts.createChart(chartContainer, {
+            // Create the chart
+            chart = LightweightCharts.createChart(chartContainer, {
                 width: chartContainer.clientWidth,
                 height: 500,
                 layout: {
@@ -29,75 +50,62 @@ document.addEventListener('DOMContentLoaded', async function() {
                         type: 'solid', 
                         color: getComputedStyle(document.body).getPropertyValue('--color-background').trim() 
                     },
-                    textColor: getComputedStyle(document.body).getPropertyValue('--color-text').trim()
+                    textColor: getComputedStyle(document.body).getPropertyValue('--color-text').trim(),
+                    fontFamily: "'Nunito Sans', sans-serif"
                 },
                 timeScale: {
                     timeVisible: true,
                     secondsVisible: false,
                     rightOffset: 12,
                     barSpacing: 12,
+                    fixLeftEdge: true,
+                    lockVisibleTimeRangeOnResize: true
                 },
                 grid: {
-                    vertLines: { visible: false },
-                    horzLines: { visible: false }
+                    vertLines: { color: 'rgba(42, 46, 57, 0.5)' },
+                    horzLines: { color: 'rgba(42, 46, 57, 0.5)' }
                 },
                 rightPriceScale: {
                     borderVisible: false,
-                },
-                crosshair: {
-                    vertLine: {
-                        width: 1,
-                        style: 1,
-                        visible: true,
-                        labelVisible: true,
-                    },
-                    horzLine: {
-                        width: 1,
-                        style: 1,
-                        visible: true,
-                        labelVisible: true,
-                    },
-                },
+                    scaleMargins: {
+                        top: 0.1,
+                        bottom: 0.1,
+                    }
+                }
             });
 
-            series = chart.addAreaSeries({
-                lineColor: '#26a69a',
-                topColor: 'rgba(38, 166, 154, 0.4)',
-                bottomColor: 'rgba(38, 166, 154, 0)',
+            // Add the line series instead of area series
+            series = chart.addLineSeries({
+                color: getComputedStyle(document.body).getPropertyValue('--color-primary').trim(),
                 lineWidth: 2,
                 priceFormat: {
                     type: 'price',
                     precision: 5,
                     minMove: 0.00001,
                 },
-                lastValueVisible: true,
-                priceLineVisible: true,
+                crosshairMarkerVisible: true,
+                crosshairMarkerRadius: 4,
             });
 
-            window.addEventListener('resize', () => {
-                chart.applyOptions({
-                    width: chartContainer.clientWidth,
-                });
-            });
-
-            chart.timeScale().subscribeVisibleLogicalRangeChange(async (range) => {
-                if (range && range.from < 10) {
-                    const currentTimeframe = dataManager.currentTimeframe;
-                    const tfData = dataManager.timeframes.get(currentTimeframe);
-                    if (tfData && tfData.data.length > 0) {
-                        const oldestBar = tfData.data[0];
-                        await dataManager.loadMoreData(currentTimeframe, oldestBar.time * 1000 - 1);
-                    }
-                }
-            });
+            // Handle resizing
+            const resizeChart = () => {
+                const width = chartContainer.clientWidth;
+                const height = chartContainer.clientHeight;
+                chart.applyOptions({ width, height });
+            };
+            const resizeObserver = new ResizeObserver(resizeChart);
+            resizeObserver.observe(chartContainer);
 
             return true;
         } catch (error) {
             console.error('Chart initialization failed:', error);
+
+            // Display an error message to the user
             const errorDiv = document.createElement('div');
             errorDiv.className = 'error-message';
-            errorDiv.textContent = 'Failed to initialize chart';
+            errorDiv.textContent = 'Failed to initialize the chart. Please refresh the page or check your internet connection.';
             chartContainer.appendChild(errorDiv);
+
             return false;
         }
     }
@@ -144,11 +152,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         window.addEventListener('historicalUpdate', (e) => {
             if (series && e.detail.data && Array.isArray(e.detail.data)) {
                 try {
-                    const areaData = e.detail.data.map(item => ({
-                        time: item.time,
-                        value: item.close
-                    }));
-                    series.setData(areaData);
+                    // The data is already in the correct format now
+                    series.setData(e.detail.data);
                     chart.timeScale().fitContent();
                 } catch (error) {
                     console.error('Failed to update chart data:', error);
@@ -158,12 +163,19 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     
     dataManager.onPriceUpdate(data => {
-        updatePriceCard('neo', data.neo.price, data.neo.change);
-        updatePriceCard('gas', data.gas.price, data.gas.change);
+        updatePriceCard('neo', data.neo);
+        updatePriceCard('gas', data.gas);
         
         const ratioDisplay = document.getElementById('live-ratio');
         if (ratioDisplay) {
+            const oldValue = parseFloat(ratioDisplay.textContent);
             ratioDisplay.textContent = data.ratio.toFixed(4);
+            
+            ratioDisplay.classList.remove('flash-update');
+            if (oldValue && data.ratio !== oldValue) {
+                void ratioDisplay.offsetWidth;
+                ratioDisplay.classList.add('flash-update');
+            }
         }
     });
 });

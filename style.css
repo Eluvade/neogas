@@ -206,7 +206,7 @@ footer {
 .price-card {
     background: var(--color-tertiary);
     border-radius: 12px;
-    padding: 1.25rem;
+     padding: 1.25rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
@@ -380,14 +380,82 @@ section h2 {
     100% { color: var(--color-text); }
 }
 
-/* Ko-fi button styles */
-.kofi-button {
-    margin-left: auto; /* Push to the right */
-    padding-left: 20px;
+/* Contact section styles */
+.contact-section {
+    margin: 4rem auto;
+    max-width: 80ch;
+    text-align: center;
 }
 
-/* Ensure Ko-fi button matches site theme */
-.kofi-button img {
-    height: 36px !important;
-    width: auto !important;
+.contact-container {
+    background: var(--color-tertiary);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.contact-section h2 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.contact-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.contact-content p {
+    font-size: 1.1rem;
+    color: var(--color-text);
+    opacity: 0.9;
+    max-width: 40ch;
+    margin: 0 auto;
+}
+
+.contact-button {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(45deg, var(--color-primary), var(--color-secondary));
+    border-radius: 30px;
+    color: var(--color-background);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    font-family: 'Work Sans', sans-serif;
+}
+
+.contact-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 229, 153, 0.2);
+}
+
+.contact-button:active {
+    transform: translateY(0);
+}
+
+.social-links {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.social-link {
+    color: var(--color-text);
+    font-size: 1.5rem;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+.social-link:hover {
+    color: var(--color-primary);
+    opacity: 1;
+    transform: translateY(-2px);
 }

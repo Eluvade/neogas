@@ -3,75 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Real-time GAS/NEO ratio chart tracking the relationship between GAS and NEO tokens">
+
+    <!-- Primary Meta Tags -->
+    <title>GASNEO -.---- -- --.--% Ratio Ticker</title>
+    <meta name="description" content="Track the real-time GAS/NEO ratio">
     <meta name="keywords" content="GAS, NEO, ratio, crypto, trading, chart">
     <meta name="author" content="Bunny Eluvade - https://eluvade.com">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
     <meta property="og:title" content="GAS/NEO Ratio Chart">
     <meta property="og:description" content="Track the real-time GAS/NEO ratio">
-    <meta property="og:image" content="URL_to_your_image">
-    <meta property="og:url" content="URL_to_your_website">
+    <meta property="og:image" content="https://neogas.eluvade.com/images/social-preview.png">
+    <meta property="og:url" content="https://neogas.eluvade.com">
     <meta property="og:author" content="https://eluvade.com">
+
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="GAS/NEO Ratio Chart">
     <meta name="twitter:description" content="Track the real-time GAS/NEO ratio">
-    <meta name="twitter:image" content="URL_to_your_image">
-    <title>GASNEO -.---- -- --.--% Ratio Ticker</title>
-    <link rel="canonical" href="URL_to_your_website">
+    <meta name="twitter:image" content="https://neogas.eluvade.com/images/social-preview.png">
+
+    <!-- Favicons -->
     <link rel="icon" type="image/png" href="/images/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
     <link rel="shortcut icon" href="/images/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-title" content="neogas" />
+
+    <!-- SEO -->
+    <link rel="canonical" href="https://neogas.eluvade.com">
     <link rel="manifest" href="/images/site.webmanifest" />
-    <link rel="stylesheet" href="style.css">
+    
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
-    <style>
-        .error-message {
-            color: #ef5350;
-            padding: 10px;
-            text-align: center;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.8);
-            border-radius: 4px;
-        }
-        .last-updated.connected {
-            color: #26a69a;
-        }
-        .last-updated.disconnected {
-            color: #ef5350;
-        }
-        #chart-container {
-            width: 100%;
-            height: 500px;
-            margin: 20px 0;
-        }
-        .timeframe-buttons {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 100;
-            display: flex;
-            gap: 5px;
-        }
-        .timeframe-button {
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid #26a69a;
-            color: #fff;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .timeframe-button.active {
-            background: #26a69a;
-        }
-        .timeframe-button:hover {
-            background: rgba(38, 166, 154, 0.3);
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header class="site-header">
@@ -81,9 +46,10 @@
                 <div class="ratio-label">GAS/NEO</div>
                 <div class="ratio-value" id="live-ratio">-.----</div>
             </div>
-            <div class="kofi-button">
+            <div class="kofi-button" id="kofi-container">
+                <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
                 <script type='text/javascript'>
-                    kofiwidget2.init('Support me on Ko-fi', '#00e599', 'O5O21AKEP9');
+                    kofiwidget2.init('Support Me on Ko-fi', '#00e599', 'O5O21AKEP9');
                     kofiwidget2.draw();
                 </script>
             </div>
@@ -143,34 +109,49 @@
                 <button class="timeframe-button active" data-timeframe="1d">1D</button>
             </div>
         </div>
-        <section id="contact">
-            <h2>Contact</h2>
-            <p>... <a href="mailto:bunny.eluvade@gmail.com">bunny.eluvade@gmail.com</a></p>
+        <section id="contact" class="contact-section">
+            <div class="contact-container">
+                <h2>Get in Touch</h2>
+                <div class="contact-content">
+                    <p>Have questions or suggestions? I'd love to hear from you.</p>
+                    <a href="mailto:bunny.eluvade@gmail.com" class="contact-button">
+                        <i class="fas fa-envelope"></i>
+                        bunny.eluvade@gmail.com
+                    </a>
+                    <div class="social-links">
+                        <a href="https://github.com/Eluvade" class="social-link" target="_blank" rel="noopener">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="https://twitter.com/BunnyEluvade" class="social-link" target="_blank" rel="noopener">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </section>
     </main>
 
     <footer>
-        <p>&copy; 2025 GAS/NEO Ratio Chart by Bunny Eluvade. All rights reserved.</p>
+        <p>&copy; 2024 GAS/NEO Ratio Chart by <a href="https://eluvade.com">Bunny Eluvade</a></p>
         <p class="attribution">
             Powered by <a href="https://www.tradingview.com/pricing/?share_your_love=BunnyEluvade" target="_blank" rel="noopener">TradingView Lightweight Charts™</a><br>
             Copyright (c) 2025 TradingView, Inc.
         </p>
     </footer>
+
+    <!-- Scripts -->
     <script>
-        // Add before other scripts to verify loading
         let chartLibraryLoaded = false;
         function onChartLibraryLoaded() {
             chartLibraryLoaded = true;
             window.dispatchEvent(new Event('chartLibraryLoaded'));
         }
     </script>
-    <script 
-        src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"
+    <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"
         onload="onChartLibraryLoaded()"
-        crossorigin="anonymous"
-    ></script>
-    <script src="scripts/data-manager.js"></script>
-    <script src="scripts/binance-client.js"></script>
-    <script src="index.js"></script>
+        defer></script>
+    <script src="scripts/data-manager.js" defer></script>
+    <script src="scripts/binance-client.js" defer></script>
+    <script src="index.js" defer></script>
 </body>
 </html>
