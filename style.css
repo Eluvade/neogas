@@ -472,26 +472,35 @@ section h2 {
 .donation-card {
     position: fixed;
     bottom: 20px;
-    right: 0px;
-    width: auto;
-    z-index: 1000;
-    background: var(--color-tertiary);
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    right: 20px;
+    border-radius: 8px;
     overflow: hidden;
-    transition: all 0.3s ease;
+    z-index: 3;
+    transition: all 0.3s ease-in-out;
+    width: 60px; /* collapsed width */
+    height: 60px;
+    justify-items: right;
+}
+
+.donation-card.expanded {
+    width: auto; /* header (60px) + body (300px) */
+    height: auto;
+    align-items: center;
+    border-radius: 0;
+    box-shadow: none;
 }
 
 .donation-header {
+    width: 60px;
+    min-width: 60px; /* Prevent shrinking */
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px; /* Square button */
-    height: 40px; /* Square button */
-    padding: 10px;
-    background: var(--color-quaternary);
+    border-radius: 8px;
     cursor: pointer;
-    border-radius: 10px;
+    transition: all 0.3s ease-in-out;
+    background-color: var(--color-quaternary);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     transform-origin: center;
     will-change: transform, box-shadow;
@@ -508,6 +517,7 @@ section h2 {
 
 .donation-header.expanded {
     background: var(--color-secondary); /* Change background when expanded */
+    border-radius: 0px;
 }
 
 .donate-icon {
@@ -518,16 +528,20 @@ section h2 {
 }
 
 .donation-body {
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-    max-height: 0;
+    width: 0;
+    opacity: 0;
     overflow: hidden;
-    transition: max-height 0.3s ease;
+    transition: all 0.3s ease-in-out;
+    background-color: var(--color-quaternary);
+    padding: 0;
 }
 
 .donation-body.expanded {
-    max-height: 300px; /* Adjust based on content height */
+    width: auto;
+    max-width: calc(100% - 40px);
+    height: auto;
+    opacity: 1;
+    padding: 15px;
 }
 
 .donation-address {
@@ -536,10 +550,11 @@ section h2 {
     gap: 10px;
     align-items: center;
     padding: 8px;
-    margin: 4px 0;
-    border-bottom: 1px solid #333;
-    position: relative;
+    margin: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
 }
+
 
 .donation-address:last-child {
     border-bottom: none;

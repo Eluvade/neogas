@@ -210,15 +210,17 @@ function toggleDonationCard(event) {
 
     if (event && !donationCard.contains(event.target)) {
         // Clicked outside the card, collapse it
+        donationCard.classList.remove('expanded');
         donationBody.classList.remove('expanded');
         donationHeader.classList.remove('expanded');
     } else {
         // Toggle the card
+        donationCard.classList.toggle('expanded');
         donationBody.classList.toggle('expanded');
         donationHeader.classList.toggle('expanded');
     }
 
-    // Always hide QR codes when toggling
+    // Hide QR codes when toggling
     document.querySelectorAll('.qr-code.visible').forEach(qr => {
         qr.classList.remove('visible');
     });
