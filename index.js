@@ -202,13 +202,23 @@ function toggleDonationCard(event) {
         donationBody.classList.toggle('expanded');
         donationHeader.classList.toggle('expanded');
     }
+
+    // Always hide QR codes when toggling
+    document.querySelectorAll('.qr-code.visible').forEach(qr => {
+        qr.classList.remove('visible');
+    });
 }
 
-// Add a click event listener to the document to collapse the card when clicking outside
+// Add a click event listener to the document to collapse the card and hide QR codes
 document.addEventListener('click', (event) => {
     const donationCard = document.querySelector('.donation-card');
     if (!donationCard.contains(event.target)) {
         toggleDonationCard(event);
+        
+        // Hide any visible QR codes
+        document.querySelectorAll('.qr-code.visible').forEach(qr => {
+            qr.classList.remove('visible');
+        });
     }
 });
 
@@ -233,6 +243,12 @@ function copyToClipboard(text, event) {
 }
 
 function toggleQRCode(id) {
+    // First hide all other visible QR codes
+    document.querySelectorAll('.qr-code.visible').forEach(qr => {
+            qr.classList.remove('visible');
+    });
+    
+    // Then toggle the selected QR code
     const qrCode = document.getElementById(id);
     qrCode.classList.toggle('visible');
 }

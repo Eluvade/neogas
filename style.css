@@ -630,9 +630,10 @@ section h2 {
 
 .qr-code {
     display: none;
-    position: absolute;
-    bottom: 100%;
-    right: 0;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     background: var(--color-tertiary);
     padding: 10px;
     border-radius: 10px;
@@ -641,8 +642,8 @@ section h2 {
 }
 
 .qr-code img {
-    width: 150px;
-    height: 150px;
+    width: 164px;
+    height: 164px;
 }
 
 .qr-code.visible {
