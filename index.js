@@ -45,7 +45,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     dataManager.onPriceUpdate(data => {
         updatePriceCard('neo', data.neo);
         updatePriceCard('gas', data.gas);
-        updateRatioTicker(data.ratio);
+        const percentChange = data.dailyOpenRatio ? 
+            ((data.ratio - data.dailyOpenRatio) / data.dailyOpenRatio) * 100 : 
+            0;
+        updateRatioTicker(data.ratio, percentChange);
     });
 
     async function waitForChartLibrary() {

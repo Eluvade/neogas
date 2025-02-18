@@ -47,7 +47,7 @@ function updatePriceCard(symbol, data) {
     }
 }
 
-function updateRatioTicker(ratio) {
+function updateRatioTicker(ratio, percentChange) {
     const ratioDisplay = document.getElementById('live-ratio');
     if (ratioDisplay) {
         const oldValue = parseFloat(ratioDisplay.textContent);
@@ -58,5 +58,10 @@ function updateRatioTicker(ratio) {
             void ratioDisplay.offsetWidth;
             ratioDisplay.classList.add('flash-update');
         }
+
+        // Update page title
+        const arrow = percentChange >= 0 ? '▲' : '▼';
+        const formattedPercent = Math.abs(percentChange).toFixed(2);
+        document.title = `GASNEO ${newValue.toFixed(4)} ${arrow} ${formattedPercent}% Ratio Ticker`;
     }
 }

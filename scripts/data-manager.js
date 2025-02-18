@@ -4,6 +4,7 @@ class DataManager {
         this.ws = null;
         this.neoPrice = null;
         this.gasPrice = null;
+        this.ratioPercentChange = 0;
         this.neo24hChange = 0;
         this.gas24hChange = 0;
         this.currentCandle = null;
@@ -23,6 +24,7 @@ class DataManager {
         this.isLoadingHistoricalData = false;
         this.neoVolume = 0;
         this.gasVolume = 0;
+        this.dailyOpenRatio = null;
     }
 
     async initialize() {
@@ -40,14 +42,19 @@ class DataManager {
             
             const neo = await neoData.json();
             const gas = await gasData.json();
-            
             this.neoPrice = parseFloat(neo.lastPrice);
             this.gasPrice = parseFloat(gas.lastPrice);
             this.neo24hChange = parseFloat(neo.priceChangePercent);
             this.gas24hChange = parseFloat(gas.priceChangePercent);
+            this.ratioPercentChange = this.gas24hChange - this.neo24hChange;
             this.neoVolume = parseFloat(neo.volume);
             this.gasVolume = parseFloat(gas.volume);
             
+            // Calculate daily open ratio using 24h changes
+            const neoOpen = this.neoPrice / (1 + (this.neo24hChange / 100));
+            const gasOpen = this.gasPrice / (1 + (this.gas24hChange / 100));
+            this.dailyOpenRatio = gasOpen / neoOpen;
+
             this.notifyPriceUpdate();
         } catch (error) {
             console.error('Error fetching initial data:', error);
@@ -245,6 +252,7 @@ class DataManager {
         } else if (data.e === 'trade') {
             this.handleTrade(data);
         }
+        this.notifyPriceUpdate();
     }
 
     handle24hTicker(data) {
@@ -362,7 +370,8 @@ class DataManager {
                 change: this.gas24hChange,
                 volume: this.gasVolume
             },
-            ratio: this.gasPrice / this.neoPrice
+            ratio: this.gasPrice / this.neoPrice,
+            dailyOpenRatio: this.dailyOpenRatio
         };
         this.callbacks.forEach(callback => callback(data));
     }
