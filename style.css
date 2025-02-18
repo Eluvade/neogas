@@ -472,7 +472,7 @@ section h2 {
 .donation-card {
     position: fixed;
     bottom: 20px;
-    right: 20px;
+    right: 0px;
     width: auto;
     z-index: 1000;
     background: var(--color-tertiary);
@@ -518,6 +518,9 @@ section h2 {
 }
 
 .donation-body {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s ease;
@@ -528,9 +531,12 @@ section h2 {
 }
 
 .donation-address {
-    display: flex;
+    display: grid;
+    grid-template-columns: 24px 120px 1fr auto auto;
+    gap: 10px;
     align-items: center;
-    padding: 10px 15px;
+    padding: 8px;
+    margin: 4px 0;
     border-bottom: 1px solid #333;
     position: relative;
 }
@@ -543,12 +549,17 @@ section h2 {
     width: 24px;
     height: 24px;
     margin-right: 10px;
+    grid-column: 1;
 }
 
 .crypto-name {
     font-size: 14px;
     color: #fff;
     margin-right: 10px;
+    grid-column: 2;
+    white-space: nowrap;
+    font-weight: 500;
+    text-align: end;
 }
 
 .crypto-address {
@@ -559,6 +570,11 @@ section h2 {
     transition: border-color 0.3s ease;
     border-radius: 5px;
     padding: 5px;
+    grid-column: 3;
+    font-family: monospace;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-wrap-mode: nowrap;
 }
 
 .crypto-address.copy-failed {
@@ -575,6 +591,7 @@ section h2 {
     padding: 5px;
     margin-left: 10px;
     transition: all 0.3s ease;
+    grid-column: auto;
 }
 
 .copy-button.copied, .crypto-address.copied  {
@@ -604,6 +621,7 @@ section h2 {
     padding: 5px;
     margin-left: 5px;
     transition: all 0.3s ease;
+    grid-column: auto;
 }
 
 .qr-button:hover {
