@@ -190,14 +190,17 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 function toggleDonationCard(event) {
     const donationCard = document.querySelector('.donation-card');
+    const donationHeader = document.querySelector('.donation-header');
     const donationBody = document.querySelector('.donation-body');
 
     if (event && !donationCard.contains(event.target)) {
         // Clicked outside the card, collapse it
         donationBody.classList.remove('expanded');
+        donationHeader.classList.remove('expanded');
     } else {
         // Toggle the card
         donationBody.classList.toggle('expanded');
+        donationHeader.classList.toggle('expanded');
     }
 }
 
@@ -209,15 +212,23 @@ document.addEventListener('click', (event) => {
     }
 });
 
-function copyToClipboard(text) {
+function copyToClipboard(text, event) {
     navigator.clipboard.writeText(text).then(() => {
         const button = event.target.closest('.copy-button');
+        const addressElement = event.target.closest('.donation-address').querySelector('.crypto-address');
+        
         if (button) {
             button.classList.add('copied');
-            setTimeout(() => button.classList.remove('copied'), 500); // Remove feedback after 0.5s
+            addressElement.classList.add('copied');
+            setTimeout(() => {
+                button.classList.remove('copied');
+                addressElement.classList.remove('copied');
+            }, 500); // Remove feedback after 0.5s
         }
-    }).catch(() => {
-        alert('Failed to copy address.');
+    }).catch((error) => {
+        const addressElement = event.target.closest('.donation-address').querySelector('.crypto-address');
+        addressElement.classList.add('copy-failed');
+        setTimeout(() => addressElement.classList.remove('copy-failed'), 1000); // Remove red border after 1s
     });
 }
 

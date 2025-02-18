@@ -474,7 +474,7 @@ section h2 {
     bottom: 20px;
     right: 20px;
     width: auto;
-    z-index: 2;
+    z-index: 1000;
     background: var(--color-tertiary);
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -483,6 +483,11 @@ section h2 {
 }
 
 .donation-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px; /* Square button */
+    height: 40px; /* Square button */
     padding: 10px;
     background: var(--color-quaternary);
     cursor: pointer;
@@ -494,10 +499,22 @@ section h2 {
 
 .donation-header:hover {
     transform: scale(1.02) translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 229, 153, 0.2);
 }
 
-.donate-header:active {
+.donation-header:active {
     transform: scale(0.98);
+}
+
+.donation-header.expanded {
+    background: var(--color-secondary); /* Change background when expanded */
+}
+
+.donate-icon {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    transition: filter 0.3s ease;
 }
 
 .donation-body {
@@ -539,6 +556,15 @@ section h2 {
     color: #aaa;
     flex-grow: 1;
     word-break: break-all;
+    transition: border-color 0.3s ease;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.crypto-address.copy-failed {
+    border: 1px solid #ff5252; /* Red border for failed copy */
+    animation: copyFeedback 0.5s ease;
+    color: #ff5252;
 }
 
 .copy-button {
@@ -551,14 +577,18 @@ section h2 {
     transition: all 0.3s ease;
 }
 
-.copy-button.copied {
-    color: #00e599; /* Green color for feedback */
+.copy-button.copied, .crypto-address.copied  {
+    color: var(--color-primary); /* Green color for feedback */
     animation: copyFeedback 0.5s ease;
+}
+
+.crypto-address.copied {
+    border: 1px solid var(--color-primary); /* Green border for successful copy */
 }
 
 @keyframes copyFeedback {
     0% { transform: scale(1); }
-    50% { transform: scale(1.2); }
+    50% { transform: scale(1.05); }
     100% { transform: scale(1); }
 }
 
@@ -599,10 +629,4 @@ section h2 {
 
 .qr-code.visible {
     display: block;
-}
-
-.donate-icon {
-    width: 24px;
-    height: 24px;
-    cursor: pointer;
 }
