@@ -16,15 +16,24 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (chartInitialized) {
         initializeTimeframeButtons(savedTimeframe);
 
+        // Flag to track initial data load
+        let isInitialDataLoaded = false;
+
         window.addEventListener('historicalUpdate', (e) => {
             if (series && e.detail.data && Array.isArray(e.detail.data)) {
+                // Filter out null or malformed data points
                 const filteredData = e.detail.data.filter(
                     p => p && p.time != null && p.value != null
                 );
                 if (filteredData.length > 0) {
                     try {
                         series.setData(filteredData);
-                        chart.timeScale().fitContent();
+
+                        // Fit content only after the initial data is loaded
+                        if (!isInitialDataLoaded) {
+                            chart.timeScale().fitContent();
+                            isInitialDataLoaded = true; // Set flag to true after first fit
+                        }
                     } catch (error) {
                         console.error('Failed to update chart data:', error);
                     }
@@ -63,15 +72,15 @@ document.addEventListener('DOMContentLoaded', async function() {
     async function initializeChart() {
         try {
             await waitForChartLibrary();
-
+    
             if (!window.LightweightCharts || !window.LightweightCharts.createChart) {
                 throw new Error('LightweightCharts library is not available.');
             }
-
+    
             chartContainer.style.width = '100%';
             chartContainer.style.position = 'relative';
             chartContainer.style.height = '500px';
-
+    
             chart = LightweightCharts.createChart(chartContainer, {
                 width: chartContainer.clientWidth,
                 height: 500,
@@ -103,7 +112,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     }
                 }
             });
-
+    
             series = chart.addLineSeries({
                 color: getComputedStyle(document.body).getPropertyValue('--color-primary').trim(),
                 lineWidth: 2,
@@ -115,7 +124,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 crosshairMarkerVisible: true,
                 crosshairMarkerRadius: 4,
             });
-
+    
             const resizeChart = () => {
                 const width = chartContainer.clientWidth;
                 const height = chartContainer.clientHeight;
@@ -123,7 +132,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             };
             const resizeObserver = new ResizeObserver(resizeChart);
             resizeObserver.observe(chartContainer);
-
+    
             return true;
         } catch (error) {
             console.error('Chart initialization failed:', error);
@@ -135,7 +144,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
-    // 2. Pass in savedTimeframe to highlight the correct button initially
     function initializeTimeframeButtons(savedTimeframe) {
         const buttons = document.querySelectorAll('.timeframe-button');
         buttons.forEach(button => {
@@ -153,17 +161,18 @@ document.addEventListener('DOMContentLoaded', async function() {
                 try {
                     // Change timeframe in data manager
                     await dataManager.changeTimeframe(timeframe);
-
-                    // 3. Save selected timeframe to local storage
+    
+                    // Save selected timeframe to local storage
                     localStorage.setItem('chartTimeframe', timeframe);
-
+    
                     // Update button states
                     buttons.forEach(b => {
                         b.classList.remove('active');
                         b.disabled = false;
                     });
                     button.classList.add('active');
-                    
+    
+                    // Fit content only after changing timeframe
                     chart.timeScale().fitContent();
                 } catch (error) {
                     console.error('Failed to change timeframe:', error);
