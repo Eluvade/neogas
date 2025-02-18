@@ -1,25 +1,23 @@
 document.addEventListener('DOMContentLoaded', async function() {
     const chartContainer = document.getElementById('chart-container');
     const dataManager = window.dataManager;
-    let chart, series;
 
     // 1. Load timeframe from local storage or default to '1d'
     const savedTimeframe = localStorage.getItem('chartTimeframe') || '1d';
 
-    await dataManager.initialize(); // Loads 1d by default internally
+    // 2. Set the saved timeframe in DataManager before initialization
+    dataManager.setTimeframe(savedTimeframe);
 
-    // If saved timeframe is not '1d', change to that timeframe
-    if (savedTimeframe !== '1d') {
-        await dataManager.changeTimeframe(savedTimeframe);
-    }
+    // 3. Initialize DataManager with the correct timeframe
+    await dataManager.initialize();
 
+    // 4. Initialize the chart
     const chartInitialized = await initializeChart();
     if (chartInitialized) {
         initializeTimeframeButtons(savedTimeframe);
-        
+
         window.addEventListener('historicalUpdate', (e) => {
             if (series && e.detail.data && Array.isArray(e.detail.data)) {
-                // Filter out null or malformed data points
                 const filteredData = e.detail.data.filter(
                     p => p && p.time != null && p.value != null
                 );

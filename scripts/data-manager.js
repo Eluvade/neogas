@@ -7,7 +7,7 @@ class DataManager {
         this.neo24hChange = 0;
         this.gas24hChange = 0;
         this.currentCandle = null;
-        this.timeframes = new Map(); // Stores { data: [], initialLoad: boolean }
+        this.timeframes = new Map();
         this.currentTimeframe = '1d';
         this.timeframeIntervals = {
             '1m': 60,
@@ -54,25 +54,63 @@ class DataManager {
         }
     }
 
+    setTimeframe(timeframe) {
+        if (this.timeframeIntervals[timeframe]) {
+            this.currentTimeframe = timeframe;
+        } else {
+            console.warn(`Invalid timeframe: ${timeframe}. Using default '1d'.`);
+            this.currentTimeframe = '1d';
+        }
+    }
+
     async loadTimeframe(timeframe) {
         if (this.timeframes.has(timeframe)) {
             const tfData = this.timeframes.get(timeframe);
             if (tfData.initialLoad) return tfData.data;
         }
 
+        const maxPages = 4;
+        let allNeoData = [];
+        let allGasData = [];
+        let endTime = Date.now();
+        
         try {
-            const [neoKlines, gasKlines] = await Promise.all([
-                fetch(`https://api.binance.com/api/v3/klines?symbol=NEOUSDT&interval=${timeframe}&limit=1000`),
-                fetch(`https://api.binance.com/api/v3/klines?symbol=GASUSDT&interval=${timeframe}&limit=1000`)
-            ]);
+            for (let page = 0; page < maxPages; page++) {
+                const [neoKlines, gasKlines] = await Promise.all([
+                    fetch(`https://api.binance.com/api/v3/klines?symbol=NEOUSDT&interval=${timeframe}&limit=1000&endTime=${endTime}`),
+                    fetch(`https://api.binance.com/api/v3/klines?symbol=GASUSDT&interval=${timeframe}&limit=1000&endTime=${endTime}`)
+                ]);
 
-            const neoData = await neoKlines.json();
-            const gasData = await gasKlines.json();
-            const processedData = this.processHistoricalData(neoData, gasData);
+                const neoData = await neoKlines.json();
+                const gasData = await gasKlines.json();
+
+                if (!neoData.length || !gasData.length) break;
+
+                allNeoData = [...neoData, ...allNeoData];
+                allGasData = [...gasData, ...allGasData];
+
+                // Update endTime for next page (use oldest timestamp - 1)
+                const oldestTimestamp = Math.min(
+                    neoData[0][0],
+                    gasData[0][0]
+                );
+                endTime = oldestTimestamp - 1;
+            }
+
+            // Remove duplicates using timestamp as key
+            const uniqueData = new Map();
+            const processedData = this.processHistoricalData(allNeoData, allGasData);
             
-            this.timeframes.set(timeframe, { data: processedData, initialLoad: true });
+            processedData.forEach(bar => {
+                uniqueData.set(bar.time, bar);
+            });
+
+            const finalData = Array.from(uniqueData.values())
+                .sort((a, b) => a.time - b.time);
+
+            this.timeframes.set(timeframe, { data: finalData, initialLoad: true });
             this.notifyHistoricalUpdate();
-            return processedData;
+            return finalData;
         } catch (error) {
             console.error(`Error loading ${timeframe} timeframe:`, error);
             return [];
@@ -106,25 +144,24 @@ class DataManager {
     }
 
     processHistoricalData(neoData, gasData) {
-        const minLength = Math.min(neoData.length, gasData.length);
+        const neoMap = new Map(neoData.map(neo => [neo[0], parseFloat(neo[4])]));
+        const gasMap = new Map(gasData.map(gas => [gas[0], parseFloat(gas[4])]));
+    
+        const allTimestamps = new Set([...neoMap.keys(), ...gasMap.keys()]);
         const bars = [];
-
-        for (let i = 0; i < minLength; i++) {
-            const neo = neoData[i];
-            const gas = gasData[i];
-            
-            const neoClose = parseFloat(neo[4]); // Close price
-            const gasClose = parseFloat(gas[4]); // Close price
-            const ratio = gasClose / neoClose;
-
-            const timestamp = Math.floor(neo[0] / 1000); // Convert to seconds
-            bars.push({
-                time: timestamp,
-                value: ratio // Only need time and value for area series
-            });
-        }
-
-        return bars.sort((a, b) => a.time - b.time);
+    
+        Array.from(allTimestamps).sort((a, b) => a - b).forEach(timestamp => {
+            const neoClose = neoMap.get(timestamp);
+            const gasClose = gasMap.get(timestamp);
+            if (neoClose !== undefined && gasClose !== undefined) {
+                bars.push({
+                    time: Math.floor(timestamp / 1000), // Convert ms to seconds
+                    value: gasClose / neoClose
+                });
+            }
+        });
+    
+        return bars;
     }
 
     connectWebSocket() {
