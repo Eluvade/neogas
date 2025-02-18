@@ -1,12 +1,12 @@
 function formatCurrency(value) {
     if (value >= 1e9) {
-        return `$${(value / 1e9).toFixed(2)}B`;
+        return `$ ${(value / 1e9).toFixed(2)}B`;
     } else if (value >= 1e6) {
-        return `$${(value / 1e6).toFixed(2)}M`;
+        return `$ ${(value / 1e6).toFixed(2)}M`;
     } else if (value >= 1e3) {
-        return `$${(value / 1e3).toFixed(2)}K`;
+        return `$ ${(value / 1e3).toFixed(2)}K`;
     }
-    return `$${value.toFixed(2)}`;
+    return `$ ${value.toFixed(2)}`;
 }
 
 function updatePriceCard(symbol, data) {
@@ -23,7 +23,7 @@ function updatePriceCard(symbol, data) {
     const formattedPrice = formatCurrency(data.price);
     
     priceElement.textContent = formattedPrice;
-    if (previousPrice) {
+    if (previousPrice && data.price !== previousPrice) {
         priceElement.classList.remove('flash-up', 'flash-down');
         void priceElement.offsetWidth;
         priceElement.classList.add(data.price > previousPrice ? 'flash-up' : 'flash-down');
@@ -42,5 +42,19 @@ function updatePriceCard(symbol, data) {
     const lastUpdated = document.querySelector('.last-updated');
     if (lastUpdated) {
         lastUpdated.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+    }
+}
+
+function updateRatioTicker(ratio) {
+    const ratioDisplay = document.getElementById('live-ratio');
+    if (ratioDisplay) {
+        const oldValue = parseFloat(ratioDisplay.textContent);
+        const newValue = +ratio.toFixed(4);
+        ratioDisplay.textContent = newValue;
+        ratioDisplay.classList.remove('flash-update');
+        if (oldValue && newValue !== oldValue) {
+            void ratioDisplay.offsetWidth;
+            ratioDisplay.classList.add('flash-update');
+        }
     }
 }

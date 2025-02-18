@@ -101,7 +101,7 @@ a:hover {
 }
 
 .ratio-value.flash-update {
-    animation: flash-update 0.66s ease-out;
+    animation: flash-update 1s ease-out;
 }
 
 @keyframes flash-update {

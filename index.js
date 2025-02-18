@@ -33,17 +33,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         updatePriceCard('neo', data.neo);
         updatePriceCard('gas', data.gas);
         
-        const ratioDisplay = document.getElementById('live-ratio');
-        if (ratioDisplay) {
-            const oldValue = parseFloat(ratioDisplay.textContent);
-            ratioDisplay.textContent = data.ratio.toFixed(4);
-            
-            ratioDisplay.classList.remove('flash-update');
-            if (oldValue && data.ratio !== oldValue) {
-                void ratioDisplay.offsetWidth;
-                ratioDisplay.classList.add('flash-update');
-            }
-        }
+        updateRatioTicker(data.ratio);
     });
 
     async function waitForChartLibrary() {
