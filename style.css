@@ -24,7 +24,7 @@ a:hover {
 .site-header {
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 4;
     padding: 0.75rem;
     backdrop-filter: blur(10px);
     background: rgba(19, 20, 27, 0.8);
@@ -474,6 +474,7 @@ section h2 {
     bottom: 20px;
     right: 20px;
     width: 300px;
+    z-index: 3;
     background: #1e1e2f;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
