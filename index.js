@@ -32,7 +32,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     dataManager.onPriceUpdate(data => {
         updatePriceCard('neo', data.neo);
         updatePriceCard('gas', data.gas);
-        
         updateRatioTicker(data.ratio);
     });
 

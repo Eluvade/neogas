@@ -20,10 +20,12 @@ function updatePriceCard(symbol, data) {
     const volumeElement = card.querySelector('.volume');
     
     const previousPrice = parseFloat(priceElement.textContent.replace('$', ''));
+    const newPrice = +data.price.toFixed(2)
     const formattedPrice = formatCurrency(data.price);
-    
+
     priceElement.textContent = formattedPrice;
-    if (previousPrice && data.price !== previousPrice) {
+    
+    if (previousPrice && newPrice !== previousPrice) {
         priceElement.classList.remove('flash-up', 'flash-down');
         void priceElement.offsetWidth;
         priceElement.classList.add(data.price > previousPrice ? 'flash-up' : 'flash-down');
