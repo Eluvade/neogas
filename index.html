@@ -117,7 +117,7 @@
                 <div class="donation-address">
                     <img src="images/neo.svg" alt="NEO Logo" class="crypto-icon">
                     <span class="crypto-name">NEO (N3):</span>
-                    <span class="crypto-address">NgV8FUWMyCXET9LT8hu4Jn4uX3xxwLFAed</span>
+                    <span class="crypto-address" onclick="copyToClipboard('NgV8FUWMyCXET9LT8hu4Jn4uX3xxwLFAed', event)">NgV8FUWMyCXET9LT8hu4Jn4uX3xxwLFAed</span>
                     <button class="copy-button" onclick="copyToClipboard('NgV8FUWMyCXET9LT8hu4Jn4uX3xxwLFAed', event)">
                         <i class="fas fa-copy"></i>
                     </button>
@@ -131,7 +131,7 @@
                 <div class="donation-address">
                     <img src="images/bitcoin.svg" alt="BTC Logo" class="crypto-icon">
                     <span class="crypto-name">Bitcoin (BTC):</span>
-                    <span class="crypto-address">bc1qf7uy0s35qxhpnz7qt5jlc358anl2pc833g4ed6</span>
+                    <span class="crypto-address" onclick="copyToClipboard('bc1qf7uy0s35qxhpnz7qt5jlc358anl2pc833g4ed6', event)">bc1qf7uy0s35qxhpnz7qt5jlc358anl2pc833g4ed6</span>
                     <button class="copy-button" onclick="copyToClipboard('bc1qf7uy0s35qxhpnz7qt5jlc358anl2pc833g4ed6', event)">
                         <i class="fas fa-copy"></i>
                     </button>
@@ -145,7 +145,7 @@
                 <div class="donation-address">
                     <img src="images/ethereum.svg" alt="ETH Logo" class="crypto-icon">
                     <span class="crypto-name">Ethereum (ETH):</span>
-                    <span class="crypto-address">0x1Ee2aDE48517445018768064daC5D31f619494e4</span>
+                    <span class="crypto-address" onclick="copyToClipboard('0x1Ee2aDE48517445018768064daC5D31f619494e4', event)">0x1Ee2aDE48517445018768064daC5D31f619494e4</span>
                     <button class="copy-button" onclick="copyToClipboard('0x1Ee2aDE48517445018768064daC5D31f619494e4', event)">
                         <i class="fas fa-copy"></i>
                     </button>
@@ -159,7 +159,7 @@
                 <div class="donation-address">
                     <img src="images/solana.svg" alt="SOL Logo" class="crypto-icon">
                     <span class="crypto-name">Solana (SOL):</span>
-                    <span class="crypto-address">GHec528BjQAzcSWwxnUVcDJT9KCSYM91PqoCNdjBVa5N</span>
+                    <span class="crypto-address" onclick="copyToClipboard('GHec528BjQAzcSWwxnUVcDJT9KCSYM91PqoCNdjBVa5N', event)">GHec528BjQAzcSWwxnUVcDJT9KCSYM91PqoCNdjBVa5N</span>
                     <button class="copy-button" onclick="copyToClipboard('GHec528BjQAzcSWwxnUVcDJT9KCSYM91PqoCNdjBVa5N', event)">
                         <i class="fas fa-copy"></i>
                     </button>
@@ -172,6 +172,7 @@
                 </div>
             </div>
         </div>
+        <div id="modal-overlay"></div>
         <section id="contact" class="contact-section">
             <div class="contact-container">
                 <h2>Get in Touch</h2>

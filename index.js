@@ -186,12 +186,24 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
         });
     }
+
+    // Add click handlers for donation addresses
+    document.querySelectorAll('.donation-address').forEach(address => {
+        const cryptoAddress = address.querySelector('.crypto-address');
+        if (cryptoAddress) {
+            cryptoAddress.addEventListener('click', (event) => {
+                const text = cryptoAddress.textContent.trim();
+                copyToClipboard(text, event);
+            });
+        }
+    });
 });
 
 function toggleDonationCard(event) {
     const donationCard = document.querySelector('.donation-card');
     const donationHeader = document.querySelector('.donation-header');
     const donationBody = document.querySelector('.donation-body');
+    const overlay = document.getElementById('modal-overlay');
 
     if (event && !donationCard.contains(event.target)) {
         // Clicked outside the card, collapse it
@@ -207,6 +219,11 @@ function toggleDonationCard(event) {
     document.querySelectorAll('.qr-code.visible').forEach(qr => {
         qr.classList.remove('visible');
     });
+
+    // Ensure overlay is hidden
+    if (overlay.style.display !== 'none') {
+        overlay.style.display = 'none';
+    }
 }
 
 // Add a click event listener to the document to collapse the card and hide QR codes
@@ -224,10 +241,11 @@ document.addEventListener('click', (event) => {
 
 function copyToClipboard(text, event) {
     navigator.clipboard.writeText(text).then(() => {
-        const button = event.target.closest('.copy-button');
-        const addressElement = event.target.closest('.donation-address').querySelector('.crypto-address');
+        const donationAddress = event.target.closest('.donation-address');
+        const button = donationAddress.querySelector('.copy-button');
+        const addressElement = donationAddress.querySelector('.crypto-address');
         
-        if (button) {
+        if (button && addressElement) {
             button.classList.add('copied');
             addressElement.classList.add('copied');
             setTimeout(() => {
@@ -243,12 +261,31 @@ function copyToClipboard(text, event) {
 }
 
 function toggleQRCode(id) {
-    // First hide all other visible QR codes
+    const overlay = document.getElementById('modal-overlay');
+    const qrCode = document.getElementById(id);
+    
+    // Check if this QR code is already visible
+    const isCurrentlyVisible = qrCode.classList.contains('visible');
+    
+    // Hide all visible QR codes
     document.querySelectorAll('.qr-code.visible').forEach(qr => {
-            qr.classList.remove('visible');
+        qr.classList.remove('visible');
     });
     
-    // Then toggle the selected QR code
-    const qrCode = document.getElementById(id);
-    qrCode.classList.toggle('visible');
+    // If the clicked QR code wasn't visible, show it and the overlay
+    if (!isCurrentlyVisible) {
+        qrCode.classList.add('visible');
+        overlay.style.display = 'block';
+    } else {
+        // If it was visible, hide it and the overlay
+        overlay.style.display = 'none';
+    }
 }
+
+// Add click handler to close QR code when clicking overlay
+document.getElementById('modal-overlay').addEventListener('click', () => {
+    document.querySelectorAll('.qr-code.visible').forEach(qr => {
+        qr.classList.remove('visible');
+    });
+    document.getElementById('modal-overlay').style.display = 'none';
+});
