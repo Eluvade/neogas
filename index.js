@@ -19,11 +19,17 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         window.addEventListener('historicalUpdate', (e) => {
             if (series && e.detail.data && Array.isArray(e.detail.data)) {
-                try {
-                    series.setData(e.detail.data);
-                    chart.timeScale().fitContent();
-                } catch (error) {
-                    console.error('Failed to update chart data:', error);
+                // Filter out null or malformed data points
+                const filteredData = e.detail.data.filter(
+                    p => p && p.time != null && p.value != null
+                );
+                if (filteredData.length > 0) {
+                    try {
+                        series.setData(filteredData);
+                        chart.timeScale().fitContent();
+                    } catch (error) {
+                        console.error('Failed to update chart data:', error);
+                    }
                 }
             }
         });
