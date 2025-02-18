@@ -238,7 +238,8 @@ class DataManager {
     }
 
     updateCurrentCandle(time, ratio) {
-        if (!this.currentCandle || time >= this.currentCandle.time + 60) {
+        const interval = this.timeframeIntervals[this.currentTimeframe] || 60;
+        if (!this.currentCandle || time >= this.currentCandle.time + interval) {
             if (this.currentCandle) {
                 const tfData = this.timeframes.get(this.currentTimeframe);
                 if (tfData) {
