@@ -3,12 +3,54 @@ document.addEventListener('DOMContentLoaded', async function() {
     const dataManager = window.dataManager;
     let chart, series;
 
+    // 1. Load timeframe from local storage or default to '1d'
+    const savedTimeframe = localStorage.getItem('chartTimeframe') || '1d';
+
+    await dataManager.initialize(); // Loads 1d by default internally
+
+    // If saved timeframe is not '1d', change to that timeframe
+    if (savedTimeframe !== '1d') {
+        await dataManager.changeTimeframe(savedTimeframe);
+    }
+
+    const chartInitialized = await initializeChart();
+    if (chartInitialized) {
+        initializeTimeframeButtons(savedTimeframe);
+        
+        window.addEventListener('historicalUpdate', (e) => {
+            if (series && e.detail.data && Array.isArray(e.detail.data)) {
+                try {
+                    series.setData(e.detail.data);
+                    chart.timeScale().fitContent();
+                } catch (error) {
+                    console.error('Failed to update chart data:', error);
+                }
+            }
+        });
+    }
+    
+    dataManager.onPriceUpdate(data => {
+        updatePriceCard('neo', data.neo);
+        updatePriceCard('gas', data.gas);
+        
+        const ratioDisplay = document.getElementById('live-ratio');
+        if (ratioDisplay) {
+            const oldValue = parseFloat(ratioDisplay.textContent);
+            ratioDisplay.textContent = data.ratio.toFixed(4);
+            
+            ratioDisplay.classList.remove('flash-update');
+            if (oldValue && data.ratio !== oldValue) {
+                void ratioDisplay.offsetWidth;
+                ratioDisplay.classList.add('flash-update');
+            }
+        }
+    });
+
     async function waitForChartLibrary() {
         return new Promise((resolve, reject) => {
             if (window.LightweightCharts) {
                 resolve();
             } else {
-                // Listen for the library to load
                 window.addEventListener('chartLibraryLoaded', () => {
                     if (window.LightweightCharts) {
                         resolve();
@@ -16,13 +58,11 @@ document.addEventListener('DOMContentLoaded', async function() {
                         reject(new Error('LightweightCharts library failed to load.'));
                     }
                 });
-
-                // Set a timeout to handle cases where the library fails to load
                 setTimeout(() => {
                     if (!window.LightweightCharts) {
-                        reject(new Error('LightweightCharts library failed to load within the expected time.'));
+                        reject(new Error('LightweightCharts library failed to load in time.'));
                     }
-                }, 5000); // 5-second timeout
+                }, 5000);
             }
         });
     }
@@ -31,17 +71,14 @@ document.addEventListener('DOMContentLoaded', async function() {
         try {
             await waitForChartLibrary();
 
-            // Ensure the library is available
             if (!window.LightweightCharts || !window.LightweightCharts.createChart) {
                 throw new Error('LightweightCharts library is not available.');
             }
 
-            // Set up the chart container
             chartContainer.style.width = '100%';
             chartContainer.style.position = 'relative';
             chartContainer.style.height = '500px';
 
-            // Create the chart
             chart = LightweightCharts.createChart(chartContainer, {
                 width: chartContainer.clientWidth,
                 height: 500,
@@ -74,7 +111,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
             });
 
-            // Add the line series instead of area series
             series = chart.addLineSeries({
                 color: getComputedStyle(document.body).getPropertyValue('--color-primary').trim(),
                 lineWidth: 2,
@@ -87,7 +123,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 crosshairMarkerRadius: 4,
             });
 
-            // Handle resizing
             const resizeChart = () => {
                 const width = chartContainer.clientWidth;
                 const height = chartContainer.clientHeight;
@@ -99,31 +134,37 @@ document.addEventListener('DOMContentLoaded', async function() {
             return true;
         } catch (error) {
             console.error('Chart initialization failed:', error);
-
-            // Display an error message to the user
             const errorDiv = document.createElement('div');
             errorDiv.className = 'error-message';
-            errorDiv.textContent = 'Failed to initialize the chart. Please refresh the page or check your internet connection.';
+            errorDiv.textContent = 'Failed to initialize the chart. Please refresh the page.';
             chartContainer.appendChild(errorDiv);
-
             return false;
         }
     }
 
-    function initializeTimeframeButtons() {
+    // 2. Pass in savedTimeframe to highlight the correct button initially
+    function initializeTimeframeButtons(savedTimeframe) {
         const buttons = document.querySelectorAll('.timeframe-button');
         buttons.forEach(button => {
+            if (button.dataset.timeframe === savedTimeframe) {
+                button.classList.add('active');
+            }
             button.addEventListener('click', async () => {
+                const timeframe = button.dataset.timeframe;
                 if (!chart || !series) {
                     console.error('Chart not initialized');
                     return;
                 }
-
+                // Show loading state
+                button.disabled = true;
                 try {
-                    const timeframe = button.dataset.timeframe;
-                    button.disabled = true;
+                    // Change timeframe in data manager
                     await dataManager.changeTimeframe(timeframe);
-                    
+
+                    // 3. Save selected timeframe to local storage
+                    localStorage.setItem('chartTimeframe', timeframe);
+
+                    // Update button states
                     buttons.forEach(b => {
                         b.classList.remove('active');
                         b.disabled = false;
@@ -143,52 +184,42 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
         });
     }
-
-    await dataManager.initialize();
-    const chartInitialized = await initializeChart();
-    if (chartInitialized) {
-        initializeTimeframeButtons();
-        
-        window.addEventListener('historicalUpdate', (e) => {
-            if (series && e.detail.data && Array.isArray(e.detail.data)) {
-                try {
-                    // The data is already in the correct format now
-                    series.setData(e.detail.data);
-                    chart.timeScale().fitContent();
-                } catch (error) {
-                    console.error('Failed to update chart data:', error);
-                }
-            }
-        });
-    }
-    
-    dataManager.onPriceUpdate(data => {
-        updatePriceCard('neo', data.neo);
-        updatePriceCard('gas', data.gas);
-        
-        const ratioDisplay = document.getElementById('live-ratio');
-        if (ratioDisplay) {
-            const oldValue = parseFloat(ratioDisplay.textContent);
-            ratioDisplay.textContent = data.ratio.toFixed(4);
-            
-            ratioDisplay.classList.remove('flash-update');
-            if (oldValue && data.ratio !== oldValue) {
-                void ratioDisplay.offsetWidth;
-                ratioDisplay.classList.add('flash-update');
-            }
-        }
-    });
 });
 
-function toggleDonationCard() {
+function toggleDonationCard(event) {
+    const donationCard = document.querySelector('.donation-card');
     const donationBody = document.querySelector('.donation-body');
-    donationBody.classList.toggle('expanded');
+
+    if (event && !donationCard.contains(event.target)) {
+        // Clicked outside the card, collapse it
+        donationBody.classList.remove('expanded');
+    } else {
+        // Toggle the card
+        donationBody.classList.toggle('expanded');
+    }
 }
+
+// Add a click event listener to the document to collapse the card when clicking outside
+document.addEventListener('click', (event) => {
+    const donationCard = document.querySelector('.donation-card');
+    if (!donationCard.contains(event.target)) {
+        toggleDonationCard(event);
+    }
+});
 
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
-        // alert('Address copied to clipboard!');
+        const button = event.target.closest('.copy-button');
+        if (button) {
+            button.classList.add('copied');
+            setTimeout(() => button.classList.remove('copied'), 500); // Remove feedback after 0.5s
+        }
     }).catch(() => {
-        // alert('Failed to copy address.');
+        alert('Failed to copy address.');
     });
+}
+
+function toggleQRCode(id) {
+    const qrCode = document.getElementById(id);
+    qrCode.classList.toggle('visible');
 }
