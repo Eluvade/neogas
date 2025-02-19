@@ -1,5 +1,7 @@
 @import "css/colors.css";
+@import "css/animate.css";
 @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500&family=Nunito+Sans:wght@400;500&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
 
 /* Base styles */
 body {
@@ -477,6 +479,7 @@ section h2 {
     overflow: hidden;
     z-index: 3;
     transition: all 0.3s ease-in-out;
+    max-width: calc(100% - 40px);
     width: 60px;
     height: 60px;
     display: flex;
@@ -489,7 +492,7 @@ section h2 {
 }
 
 .donation-card.expanded {
-    width: auto;
+    width: fit-content; /* Allow width to grow */
     height: auto;
     align-items: flex-end;
     border-radius: 0;
@@ -497,9 +500,9 @@ section h2 {
 }
 
 .donation-footer {
-    width: 60px;
+    max-width: 60px;
     min-width: 60px;
-    height: 60px;
+    max-height: 60px;
     min-height: 60px;
     display: flex;
     align-items: center;
@@ -573,39 +576,13 @@ section h2 {
 
 .donation-body {
     order: 1;
-    width: 0; /* Start with no width */
-    height: 0;
-    max-height: 0; /* Start with no height */
     overflow: hidden;
-    transition: 
-        height 0.5s ease-in-out, /* Animate height first */
-        max-height 0.5s ease-in-out, /* Animate height first */
-        width 0.5s ease-in-out 0.5s; /* Animate width after height completes */
     background-color: var(--color-quaternary);
-    padding: 0;
     border-radius: 8px 8px 0 8px;
-    transform-origin: bottom right;
 }
 
 .donation-body.expanded {
-    width: auto;
-    max-width: calc(100% - 40px);
-    height: auto;
-    max-height: fit-content;
     padding: 15px;
-}
-
-.donation-body.expanded::after {
-    content: '';
-    display: block;
-    width: 100%;
-    height: auto;
-    background-color: var(--color-quaternary);
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: -1;
-    border-radius: 8px 8px 0 8px;
 }
 
 .donation-address {
