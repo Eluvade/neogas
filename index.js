@@ -200,49 +200,58 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
         }
     });
+
+    // Add click handler to close QR code when clicking overlay
+    document.getElementById('modal-overlay').addEventListener('click', () => {
+        document.querySelectorAll('.qr-code.visible').forEach(qr => {
+            qr.classList.remove('visible');
+        });
+        document.getElementById('modal-overlay').style.display = 'none';
+    });
 });
 
-function toggleDonationCard(event) {
+async function toggleDonationCard(event) {
     const donationCard = document.querySelector('.donation-card');
     const donationFooter = document.querySelector('.donation-footer');
     const donationBody = document.querySelector('.donation-body');
     const overlay = document.getElementById('modal-overlay');
 
-    if (event && !donationCard.contains(event.target)) {
-        // Clicked outside the card, collapse it
-        donationCard.classList.remove('expanded');
-        donationBody.classList.remove('expanded');
-        donationFooter.classList.remove('expanded');
-    } else {
-        // Toggle the card
-        donationCard.classList.toggle('expanded');
-        donationBody.classList.toggle('expanded');
-        donationFooter.classList.toggle('expanded');
+    const listener = e => {
+        if (e.key === 'Escape' || !donationCard.contains(e.target)) {
+            collapse();
+            document.removeEventListener('keydown', listener);
+            document.removeEventListener('click', listener);
+        }
     }
 
-    // Hide QR codes when toggling
-    document.querySelectorAll('.qr-code.visible').forEach(qr => {
-        qr.classList.remove('visible');
-    });
-
-    // Ensure overlay is hidden
-    if (overlay.style.display !== 'none') {
-        overlay.style.display = 'none';
-    }
-}
-
-// Add a click event listener to the document to collapse the card and hide QR codes
-document.addEventListener('click', (event) => {
-    const donationCard = document.querySelector('.donation-card');
-    if (!donationCard.contains(event.target)) {
-        toggleDonationCard(event);
-        
-        // Hide any visible QR codes
+    const collapse = async _ => {
         document.querySelectorAll('.qr-code.visible').forEach(qr => {
             qr.classList.remove('visible');
         });
+        overlay.style.display = 'none';
+        await animateCSS(donationBody, 'collapse', 'fast');
+        donationBody.classList.remove('expanded');
+        donationCard.classList.remove('expanded');
+        donationFooter.classList.remove('expanded');
     }
-});
+
+    const expand = async _ => {
+        document.addEventListener('click', listener);
+        document.addEventListener('keydown', listener);
+        donationCard.classList.add('expanded');
+        donationBody.classList.add('expanded');
+        await animateCSS(donationBody, 'expand', 'fast');
+        donationFooter.classList.add('expanded');
+    }
+
+    // add logic that calls expand or collapse accordingly:
+    if (donationCard.classList.contains('expanded')) {
+        collapse();
+    } else {
+        expand();
+    }
+
+}
 
 function copyToClipboard(text, event) {
     navigator.clipboard.writeText(text).then(() => {
@@ -286,11 +295,3 @@ function toggleQRCode(id) {
         overlay.style.display = 'none';
     }
 }
-
-// Add click handler to close QR code when clicking overlay
-document.getElementById('modal-overlay').addEventListener('click', () => {
-    document.querySelectorAll('.qr-code.visible').forEach(qr => {
-        qr.classList.remove('visible');
-    });
-    document.getElementById('modal-overlay').style.display = 'none';
-});
