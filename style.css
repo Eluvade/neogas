@@ -477,23 +477,26 @@ section h2 {
     overflow: hidden;
     z-index: 3;
     transition: all 0.3s ease-in-out;
-    width: 60px; /* collapsed width */
+    width: 60px;
     height: 60px;
-    justify-items: right;
+    display: flex;
+    flex-direction: column;
+    
 }
 
 .donation-card.expanded {
-    width: auto; /* header (60px) + body (300px) */
+    width: auto;
     height: auto;
-    align-items: center;
+    align-items: flex-end;
     border-radius: 0;
     box-shadow: none;
 }
 
-.donation-header {
+.donation-footer {
     width: 60px;
-    min-width: 60px; /* Prevent shrinking */
+    min-width: 60px;
     height: 60px;
+    min-height: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -504,19 +507,20 @@ section h2 {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     transform-origin: center;
     will-change: transform, box-shadow;
+    order: 2; /* Move to bottom */
 }
 
-.donation-header:hover {
+.donation-footer:hover {
     transform: scale(1.02) translateY(-2px);
     box-shadow: 0 6px 12px rgba(0, 229, 153, 0.2);
 }
 
-.donation-header:active {
+.donation-footer:active {
     transform: scale(0.98);
 }
 
-.donation-header.expanded {
-    background: var(--color-secondary); /* Change background when expanded */
+.donation-footer.expanded {
+    background: var(--color-secondary);
     border-radius: 0px;
 }
 
@@ -528,6 +532,7 @@ section h2 {
 }
 
 .donation-body {
+    order: 1;
     width: 0;
     opacity: 0;
     overflow: hidden;
@@ -542,6 +547,7 @@ section h2 {
     height: auto;
     opacity: 1;
     padding: 15px;
+    border-radius: 8px 8px 0 8px;
 }
 
 .donation-address {
@@ -554,7 +560,6 @@ section h2 {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 4px;
 }
-
 
 .donation-address:last-child {
     border-bottom: none;

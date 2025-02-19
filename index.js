@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 function toggleDonationCard(event) {
     const donationCard = document.querySelector('.donation-card');
-    const donationHeader = document.querySelector('.donation-header');
+    const donationFooter = document.querySelector('.donation-footer');
     const donationBody = document.querySelector('.donation-body');
     const overlay = document.getElementById('modal-overlay');
 
@@ -212,12 +212,12 @@ function toggleDonationCard(event) {
         // Clicked outside the card, collapse it
         donationCard.classList.remove('expanded');
         donationBody.classList.remove('expanded');
-        donationHeader.classList.remove('expanded');
+        donationFooter.classList.remove('expanded');
     } else {
         // Toggle the card
         donationCard.classList.toggle('expanded');
         donationBody.classList.toggle('expanded');
-        donationHeader.classList.toggle('expanded');
+        donationFooter.classList.toggle('expanded');
     }
 
     // Hide QR codes when toggling
