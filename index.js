@@ -2,6 +2,22 @@ document.addEventListener('DOMContentLoaded', async function() {
     const chartContainer = document.getElementById('chart-container');
     const dataManager = window.dataManager;
 
+    // Encapsulate chart state
+    const chartState = {
+        chart: null,
+        series: null,
+        resizeObserver: null
+    };
+    
+    // Add debounce to timeframe button clicks
+    const debounce = (fn, delay) => {
+        let timeout;
+        return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => fn(...args), delay);
+        };
+    };
+
     // 1. Load timeframe from local storage or default to '1d'
     const savedTimeframe = localStorage.getItem('chartTimeframe') || '1d';
 
@@ -20,18 +36,18 @@ document.addEventListener('DOMContentLoaded', async function() {
         let isInitialDataLoaded = false;
 
         window.addEventListener('historicalUpdate', (e) => {
-            if (series && e.detail.data && Array.isArray(e.detail.data)) {
+            if (chartState.series && e.detail.data && Array.isArray(e.detail.data)) {
                 // Filter out null or malformed data points
                 const filteredData = e.detail.data.filter(
                     p => p && p.time != null && p.value != null
                 );
                 if (filteredData.length > 0) {
                     try {
-                        series.setData(filteredData);
+                        chartState.series.setData(filteredData);
 
                         // Fit content only after the initial data is loaded
                         if (!isInitialDataLoaded) {
-                            chart.timeScale().fitContent();
+                            chartState.chart.timeScale().fitContent();
                             isInitialDataLoaded = true; // Set flag to true after first fit
                         }
                     } catch (error) {
@@ -76,15 +92,15 @@ document.addEventListener('DOMContentLoaded', async function() {
         try {
             await waitForChartLibrary();
     
-            if (!window.LightweightCharts || !window.LightweightCharts.createChart) {
-                throw new Error('LightweightCharts library is not available.');
-            }
+            if (!window.LightweightCharts?.createChart) {
+                throw new Error('Chart library failed to load');
+              }
     
             chartContainer.style.width = '100%';
             chartContainer.style.position = 'relative';
             chartContainer.style.height = '500px';
     
-            chart = LightweightCharts.createChart(chartContainer, {
+            chartState.chart = LightweightCharts.createChart(chartContainer, {
                 width: chartContainer.clientWidth,
                 height: 500,
                 layout: {
@@ -116,7 +132,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
             });
     
-            series = chart.addLineSeries({
+            chartState.series = chartState.chart.addLineSeries({
                 color: getComputedStyle(document.body).getPropertyValue('--color-primary').trim(),
                 lineWidth: 2,
                 priceFormat: {
@@ -127,11 +143,16 @@ document.addEventListener('DOMContentLoaded', async function() {
                 crosshairMarkerVisible: true,
                 crosshairMarkerRadius: 4,
             });
+
+                // Cleanup on unload
+            window.addEventListener('beforeunload', () => {
+                chartState.resizeObserver?.disconnect();
+            });
     
             const resizeChart = () => {
                 const width = chartContainer.clientWidth;
                 const height = chartContainer.clientHeight;
-                chart.applyOptions({ width, height });
+                chartState.chart.applyOptions({ width, height });
             };
             const resizeObserver = new ResizeObserver(resizeChart);
             resizeObserver.observe(chartContainer);
@@ -155,7 +176,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
             button.addEventListener('click', async () => {
                 const timeframe = button.dataset.timeframe;
-                if (!chart || !series) {
+                if (!chartState.chart || !chartState.series) {
                     console.error('Chart not initialized');
                     return;
                 }
@@ -176,7 +197,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     button.classList.add('active');
     
                     // Fit content only after changing timeframe
-                    chart.timeScale().fitContent();
+                    chartState.chart.timeScale().fitContent();
                 } catch (error) {
                     console.error('Failed to change timeframe:', error);
                     button.disabled = false;
