@@ -481,7 +481,11 @@ section h2 {
     height: 60px;
     display: flex;
     flex-direction: column;
-    
+    align-items: flex-end; /* Align to the right */
+}
+
+.donatio-card::after {
+    opacity: 0.1;
 }
 
 .donation-card.expanded {
@@ -502,13 +506,10 @@ section h2 {
     justify-content: center;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     background-color: var(--color-quaternary);
-    transform-origin: center;
-    will-change: transform, box-shadow;
-    order: 2;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    position: relative;  /* Add this to ensure proper stacking of pseudo-elements */
+    position: relative;
+    order: 2; /* Ensure footer is below the body when expanded */
 }
 
 .donation-footer:hover {
@@ -517,8 +518,8 @@ section h2 {
 }
 
 .donation-footer:active {
-    transform: scale(0.98);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    transform: none; /* Remove scaling on active */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Keep shadow consistent */
 }
 
 /* Add subtle glow effect on hover */
@@ -529,7 +530,6 @@ section h2 {
     left: 0;
     right: 0;
     bottom: 0;
-    border-radius: 8px;
     background: linear-gradient(45deg, var(--color-primary), var(--color-secondary));
     opacity: 0;
     z-index: -1;
@@ -573,20 +573,38 @@ section h2 {
 
 .donation-body {
     order: 1;
-    width: 0;
-    opacity: 0;
+    width: 0; /* Start with no width */
+    height: 0;
+    max-height: 0; /* Start with no height */
     overflow: hidden;
-    transition: all 0.3s ease-in-out;
+    transition: 
+        height 0.5s ease-in-out, /* Animate height first */
+        max-height 0.5s ease-in-out, /* Animate height first */
+        width 0.5s ease-in-out 0.5s; /* Animate width after height completes */
     background-color: var(--color-quaternary);
     padding: 0;
+    border-radius: 8px 8px 0 8px;
+    transform-origin: bottom right;
 }
 
 .donation-body.expanded {
     width: auto;
     max-width: calc(100% - 40px);
     height: auto;
-    opacity: 1;
+    max-height: fit-content;
     padding: 15px;
+}
+
+.donation-body.expanded::after {
+    content: '';
+    display: block;
+    width: 100%;
+    height: auto;
+    background-color: var(--color-quaternary);
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
     border-radius: 8px 8px 0 8px;
 }
 
@@ -698,7 +716,7 @@ section h2 {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
-    z-index: 998;
+    z-index: 2;
 }
 
 .qr-code {
@@ -707,7 +725,7 @@ section h2 {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 999;
+    z-index: 4;
     background: var(--color-tertiary);
     padding: 20px;
     border-radius: 8px;
