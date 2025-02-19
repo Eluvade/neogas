@@ -502,33 +502,73 @@ section h2 {
     justify-content: center;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.3s ease-in-out;
-    background-color: var(--color-quaternary);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: var(--color-quaternary);
     transform-origin: center;
     will-change: transform, box-shadow;
-    order: 2; /* Move to bottom */
+    order: 2;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;  /* Add this to ensure proper stacking of pseudo-elements */
 }
 
 .donation-footer:hover {
     transform: scale(1.02) translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 229, 153, 0.2);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
 }
 
 .donation-footer:active {
     transform: scale(0.98);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Add subtle glow effect on hover */
+.donation-footer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 8px;
+    background: linear-gradient(45deg, var(--color-primary), var(--color-secondary));
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.3s ease;
+}
+
+.donation-footer:hover::after,
+.donation-footer:active::after {
+    opacity: 0.1;
+}
+
+.donation-footer:hover .donate-icon {
+    filter: brightness(0) saturate(100%) invert(83%) sepia(31%) saturate(1191%) hue-rotate(101deg) brightness(97%) contrast(88%);
 }
 
 .donation-footer.expanded {
-    background: var(--color-secondary);
-    border-radius: 0px;
+    transform: scale(1.02) translateY(-2px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
+    background: var(--color-quaternary);
+    border-radius: 8px;
+}
+
+.donation-footer.expanded:hover {
+    background-color: var(--color-quaternary);
+}
+
+.donation-footer.expanded:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.donation-footer.expanded::after {
+    opacity: 0.1;
 }
 
 .donate-icon {
     width: 24px;
     height: 24px;
     cursor: pointer;
-    transition: filter 0.3s ease;
 }
 
 .donation-body {
@@ -585,11 +625,11 @@ section h2 {
 .crypto-address {
     font-size: 12px;
     color: #aaa;
-    background-color: var(--color-quaternary);
+    background-color: var(--color-tertiary);
     flex-grow: 1;
     word-break: break-all;
     transition: border-color 0.3s ease;
-    border-radius: 5px;
+    border-radius: 6px;
     padding: 5px;
     grid-column: 3;
     font-family: monospace;
