@@ -130,17 +130,18 @@ document.addEventListener('DOMContentLoaded', async function() {
                         bottom: 0.1,
                     }
                 },
-                // crosshair: {
-                //     // hide the horizontal crosshair line
-                //     horzLine: {
-                //         visible: true,
-                //         labelVisible: true,
-                //     },
-                //     // hide the vertical crosshair label
-                //     vertLine: {
-                //         labelVisible: true,
-                //     }
-                // }
+                crosshair: {
+                    mode: 0,
+                    // // hide the horizontal crosshair line
+                    // horzLine: {
+                    //     visible: true,
+                    //     labelVisible: true,
+                    // },
+                    // // hide the vertical crosshair label
+                    // vertLine: {
+                    //     labelVisible: true,
+                    // }
+                }
                 
             });
     
