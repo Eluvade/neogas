@@ -46,7 +46,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Function to check and load historical data
         const checkHistoricalData = async () => {
             const data = dataManager.getData();
-            console.log('Checking historical data:', data?.length || 0, 'points');
             
             if (data && data.length > 0) {
                 try {
@@ -69,7 +68,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             
             if (retryCount < maxRetries) {
                 retryCount++;
-                console.log(`Retrying historical data load (${retryCount}/${maxRetries})`);
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 return checkHistoricalData();
             }
