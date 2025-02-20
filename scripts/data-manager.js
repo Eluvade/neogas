@@ -158,7 +158,7 @@ class DataManager {
             const gasClose = gasMap.get(timestamp);
             if (neoClose !== undefined && gasClose !== undefined) {
                 bars.push({
-                    time: Math.floor(timestamp / 1000), // Convert ms to seconds
+                    time: Math.floor(timestamp / 1000), // Convert Binance ms to seconds
                     value: gasClose / neoClose
                 });
             }
@@ -262,7 +262,7 @@ class DataManager {
 
     handleTrade(data) {
         const price = parseFloat(data.p);
-        const time = Math.floor(data.T / 1000);
+        const time = Math.floor(data.T / 1000); // Convert Binance ms to seconds
 
         if (data.s === 'NEOUSDT') {
             this.neoPrice = price;
@@ -272,38 +272,12 @@ class DataManager {
 
         if (this.neoPrice && this.gasPrice) {
             const ratio = this.gasPrice / this.neoPrice;
-            this.updateCurrentCandle(time, ratio);
             this.updateCurrentTimeframe(ratio, time);
             this.notifyPriceUpdate();
         }
     }
 
-    updateCurrentCandle(time, ratio) {
-        const interval = this.timeframeIntervals[this.currentTimeframe] || 60;
-        if (!this.currentCandle || time >= this.currentCandle.time + interval) {
-            if (this.currentCandle) {
-                const tfData = this.timeframes.get(this.currentTimeframe);
-                if (tfData) {
-                    tfData.data.push(this.currentCandle);
-                    this.notifyHistoricalUpdate();
-                }
-            }
-            this.currentCandle = {
-                time,
-                open: ratio,
-                high: ratio,
-                low: ratio,
-                close: ratio
-            };
-        } else {
-            this.currentCandle.high = Math.max(this.currentCandle.high, ratio);
-            this.currentCandle.low = Math.min(this.currentCandle.low, ratio);
-            this.currentCandle.close = ratio;
-        }
-    }
-
     startRealtimeUpdates() {
-        // Clear any existing interval
         if (this.realtimeUpdateInterval) {
             clearInterval(this.realtimeUpdateInterval);
         }
@@ -311,51 +285,77 @@ class DataManager {
         this.realtimeUpdateInterval = setInterval(() => {
             if (!this.neoPrice || !this.gasPrice) return;
             
-            const now = Math.floor(Date.now() / 1000);
+            const now = Math.floor(Date.now() / 1000); // Current time in seconds
             if (this.lastUpdateTime === now) return;
             
             const ratio = this.gasPrice / this.neoPrice;
-            const update = {
-                time: now,
-                value: ratio
-            };
+            const interval = this.timeframeIntervals[this.currentTimeframe];
+            const normalizedTime = Math.floor(now / interval) * interval;
 
-            // Update the current timeframe data
-            this.updateCurrentTimeframe(ratio, now);
+            const tfData = this.timeframes.get(this.currentTimeframe);
+            if (!tfData || !tfData.data.length) return;
+
+            const lastBar = tfData.data[tfData.data.length - 1];
             
-            // Notify listeners of the update
-            window.dispatchEvent(new CustomEvent('realtimeUpdate', {
-                detail: { data: update }
-            }));
+            // Check if we're still in the current bar's period
+            if (lastBar && normalizedTime === lastBar.time) {
+                window.dispatchEvent(new CustomEvent('realtimeUpdate', {
+                    detail: { 
+                        data: {
+                            time: lastBar.time,
+                            value: ratio
+                        }
+                    }
+                }));
+            } else if (normalizedTime > lastBar.time) {
+                // Create new bar for new period
+                tfData.data.push({
+                    time: normalizedTime,
+                    value: ratio
+                });
+                this.notifyHistoricalUpdate();
+            }
 
             this.lastUpdateTime = now;
-        }, 1000); // Update every second
+        }, 1000);
     }
 
     updateCurrentTimeframe(ratio, timestamp) {
         const interval = this.timeframeIntervals[this.currentTimeframe];
         const normalizedTime = Math.floor(timestamp / interval) * interval;
-
+    
         const tfData = this.timeframes.get(this.currentTimeframe);
-        if (!tfData) return;
-
+        if (!tfData || !tfData.data.length) return;
+    
         let data = tfData.data;
         let lastBar = data[data.length - 1];
-
-        if (!lastBar || lastBar.time < normalizedTime) {
-            // Create new bar
-            lastBar = {
+        
+        // If this is for a new period, create new bar
+        if (!lastBar || normalizedTime > lastBar.time) {
+            // Ensure there's no gap between bars
+            if (lastBar && normalizedTime > lastBar.time + interval) {
+                // Fill gap with empty bars
+                let gapTime = lastBar.time + interval;
+                while (gapTime < normalizedTime) {
+                    data.push({
+                        time: gapTime,
+                        value: lastBar.value
+                    });
+                    gapTime += interval;
+                }
+            }
+            
+            data.push({
                 time: normalizedTime,
                 value: ratio
-            };
-            data.push(lastBar);
-        } else {
-            // Update existing bar
+            });
+            this.notifyHistoricalUpdate();
+        } 
+        // Update current period bar
+        else if (lastBar.time === normalizedTime) {
             lastBar.value = ratio;
+            this.notifyHistoricalUpdate();
         }
-
-        // Notify of the update
-        this.notifyHistoricalUpdate();
     }
 
     cleanup() {
