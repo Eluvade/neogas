@@ -11,11 +11,24 @@
     <meta name="author" content="Bunny Eluvade - https://eluvade.com">
     <meta property="og:site_name" content="GASNEO Ratio Ticker">
 
-    <!-- Add CSP meta tag for security -->
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="Permissions-Policy" content="interest-cohort=()">
     <meta http-equiv="Content-Security-Policy" 
-      content="default-src 'self' https: 'unsafe-inline' 'unsafe-eval';
+      content="default-src 'self' https:;
               connect-src 'self' https://api.binance.com wss://stream.binance.com:9443;
-              img-src 'self' data: https:">
+              img-src 'self' data: https:;
+              script-src 'self' 'unsafe-inline' https://storage.ko-fi.com https://unpkg.com;
+              style-src 'self' 'unsafe-inline' https:;
+              font-src 'self' https:;
+              frame-src 'self' https://ko-fi.com;
+              upgrade-insecure-requests;">
+
+    <!-- Resource Hints -->
+    <link rel="preconnect" href="https://api.binance.com">
+    <link rel="preconnect" href="https://stream.binance.com">
+    <link rel="preload" href="/style.css" as="style">
+    <link rel="preload" href="/scripts/data-manager.js" as="script">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
