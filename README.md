@@ -4,11 +4,31 @@
   <p align="center">Real-time price ratio tracking between GAS and NEO tokens</p>
 </p>
 
+<div align="center">
+
+[![JavaScript](https://img.shields.io/badge/javascript-ES6%2B-brightgreen)](https://www.ecma-international.org/ecma-262/)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![TradingView](https://img.shields.io/badge/TradingView-Lightweight%20Charts-orange)](https://www.tradingview.com/lightweight-charts/)
+[![PWA](https://img.shields.io/badge/PWA-ready-purple)](https://web.dev/progressive-web-apps/)
+
+</div>
+
 <p align="center">
   <a href="https://ko-fi.com/O5O21AKEP9">
     <img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Support on Ko-fi">
   </a>
 </p>
+
+## 📚 Table of Contents
+
+- [📚 Table of Contents](#-table-of-contents)
+- [🚀 Features](#-features)
+- [🛠️ Technology Stack](#️-technology-stack)
+- [🚦 Quick Start](#-quick-start)
+- [💎 Support the Project](#-support-the-project)
+- [🤝 Contributing](#-contributing)
+- [📬 Contact](#-contact)
+- [📜 License](#-license)
 
 ## 🚀 Features
 
