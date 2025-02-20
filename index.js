@@ -129,10 +129,22 @@ document.addEventListener('DOMContentLoaded', async function() {
                         top: 0.1,
                         bottom: 0.1,
                     }
-                }
+                },
+                // crosshair: {
+                //     // hide the horizontal crosshair line
+                //     horzLine: {
+                //         visible: true,
+                //         labelVisible: true,
+                //     },
+                //     // hide the vertical crosshair label
+                //     vertLine: {
+                //         labelVisible: true,
+                //     }
+                // }
+                
             });
     
-            chartState.series = chartState.chart.addLineSeries({
+            chartState.series = chartState.chart.addAreaSeries({
                 color: getComputedStyle(document.body).getPropertyValue('--color-primary').trim(),
                 lineWidth: 2,
                 priceFormat: {
@@ -144,11 +156,52 @@ document.addEventListener('DOMContentLoaded', async function() {
                 crosshairMarkerRadius: 4,
             });
 
-                // Cleanup on unload
-            window.addEventListener('beforeunload', () => {
-                chartState.resizeObserver?.disconnect();
+            const container = document.getElementById('container');
+
+            const toolTipWidth = 80;
+            const toolTipHeight = 80;
+            const toolTipMargin = 15;
+
+            // Create and style the tooltip html element
+            const toolTip = document.createElement('div');
+            toolTip.style = `width: 96px; height: 80px; position: absolute; display: none; padding: 8px; box-sizing: border-box; font-size: 12px; text-align: left; z-index: 1000; top: 12px; left: 12px; pointer-events: none; border: 1px solid; border-radius: 2px;font-family: -apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;`;
+            toolTip.style.background = 'black';
+            toolTip.style.color = 'white';
+            toolTip.style.borderColor = 'rgba( 38, 166, 154, 1)';
+            chartContainer.appendChild(toolTip);
+
+            window.addEventListener('realtimeUpdate', (e) => {
+                if (chartState.series && e.detail.data) {
+                    try {
+                        chartState.series.update(e.detail.data);
+                    } catch (error) {
+                        console.error('Failed to update realtime data:', error);
+                    }
+                }
             });
     
+            // Add "Go to realtime" button
+            const goToRealtimeButton = document.createElement('button');
+            goToRealtimeButton.innerHTML = '<i class="fas fa-angle-double-right"></i>';
+            goToRealtimeButton.classList.add('realtime-button');
+            goToRealtimeButton.addEventListener('click', () => {
+                if (chartState.chart) {
+                    chartState.chart.timeScale().scrollToRealTime();
+                }
+            });
+    
+            // Add button to timeframe controls
+            const timeframeControls = document.querySelector('.chart-controls');
+            if (timeframeControls) {
+                timeframeControls.appendChild(goToRealtimeButton);
+            }
+    
+            // Cleanup on window unload
+            window.addEventListener('beforeunload', () => {
+                window.dataManager.cleanup();
+                chartState.resizeObserver?.disconnect();
+            });
+        
             const resizeChart = () => {
                 const width = chartContainer.clientWidth;
                 const height = chartContainer.clientHeight;

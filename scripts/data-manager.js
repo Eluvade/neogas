@@ -25,12 +25,15 @@ class DataManager {
         this.neoVolume = 0;
         this.gasVolume = 0;
         this.dailyOpenRatio = null;
+        this.lastUpdateTime = null;
+        this.realtimeUpdateInterval = null;
     }
 
     async initialize() {
         await this.fetchInitialData();
         await this.loadTimeframe(this.currentTimeframe);
         this.connectWebSocket();
+        this.startRealtimeUpdates();
     }
 
     async fetchInitialData() {
@@ -299,6 +302,36 @@ class DataManager {
         }
     }
 
+    startRealtimeUpdates() {
+        // Clear any existing interval
+        if (this.realtimeUpdateInterval) {
+            clearInterval(this.realtimeUpdateInterval);
+        }
+
+        this.realtimeUpdateInterval = setInterval(() => {
+            if (!this.neoPrice || !this.gasPrice) return;
+            
+            const now = Math.floor(Date.now() / 1000);
+            if (this.lastUpdateTime === now) return;
+            
+            const ratio = this.gasPrice / this.neoPrice;
+            const update = {
+                time: now,
+                value: ratio
+            };
+
+            // Update the current timeframe data
+            this.updateCurrentTimeframe(ratio, now);
+            
+            // Notify listeners of the update
+            window.dispatchEvent(new CustomEvent('realtimeUpdate', {
+                detail: { data: update }
+            }));
+
+            this.lastUpdateTime = now;
+        }, 1000); // Update every second
+    }
+
     updateCurrentTimeframe(ratio, timestamp) {
         const interval = this.timeframeIntervals[this.currentTimeframe];
         const normalizedTime = Math.floor(timestamp / interval) * interval;
@@ -313,15 +346,25 @@ class DataManager {
             // Create new bar
             lastBar = {
                 time: normalizedTime,
-                value: ratio // Changed from OHLC to simple value for area series
+                value: ratio
             };
             data.push(lastBar);
         } else {
             // Update existing bar
-            lastBar.value = ratio; // Just update the value
+            lastBar.value = ratio;
         }
 
+        // Notify of the update
         this.notifyHistoricalUpdate();
+    }
+
+    cleanup() {
+        if (this.realtimeUpdateInterval) {
+            clearInterval(this.realtimeUpdateInterval);
+        }
+        if (this.ws) {
+            this.ws.close();
+        }
     }
 
     getData(timeframe = null) {

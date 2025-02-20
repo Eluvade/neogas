@@ -717,3 +717,12 @@ section h2 {
 .qr-code.visible {
     display: block;
 }
+
+.chart-controls {
+    display: flex;
+    margin-top: 1rem;
+}
+
+.realtime-button {
+    margin-left: auto;
+}
