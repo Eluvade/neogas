@@ -238,6 +238,11 @@ async function toggleDonationCard() {
     const overlay = document.getElementById('modal-overlay');
 
     const listener = e => {
+        if (!donationCard.classList.contains('expanded')) {
+            document.removeEventListener('keydown', listener);
+            document.removeEventListener('click', listener);
+            return;
+        }
         if (e.key === 'Escape' || !donationCard.contains(e.target)) {
             collapse();
         }
