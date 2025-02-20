@@ -88,6 +88,18 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
+    function formatTimeframe(timestamp) {
+        const date = new Date(timestamp * 1000); // Convert seconds to milliseconds
+        return new Intl.DateTimeFormat('default', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        }).format(date);
+    }
+
     async function initializeChart() {
         try {
             await waitForChartLibrary();
@@ -177,7 +189,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 ) {
                     toolTip.style.display = 'none';
                 } else {
-                    const dateStr = param.time;
+                    const formattedTime = formatTimeframe(param.time);
                     toolTip.style.display = 'block';
                     const data = param.seriesData.get(chartState.series);
                     const price = data.value !== undefined ? data.value : data.close;
@@ -185,7 +197,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     toolTip.innerHTML = `
                         <div class="tooltip-title">GAS / NEO</div>
                         <div class="tooltip-price">${price.toFixed(5)}</div>
-                        <div class="tooltip-time">${dateStr}</div>
+                        <div class="tooltip-time">${formattedTime}</div>
                     `;
             
                     const y = param.point.y;
