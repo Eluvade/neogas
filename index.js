@@ -34,25 +34,73 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         // Flag to track initial data load
         let isInitialDataLoaded = false;
+        let retryCount = 0;
+        const maxRetries = 3;
 
-        window.addEventListener('historicalUpdate', (e) => {
-            if (chartState.series && e.detail.data && Array.isArray(e.detail.data)) {
-                // Filter out null or malformed data points
-                const filteredData = e.detail.data.filter(
-                    p => p && p.time != null && p.value != null
-                );
-                if (filteredData.length > 0) {
-                    try {
+        // Add loading indicator
+        const loadingIndicator = document.createElement('div');
+        loadingIndicator.className = 'chart-loading';
+        loadingIndicator.textContent = 'Loading chart data...';
+        chartContainer.appendChild(loadingIndicator);
+
+        // Function to check and load historical data
+        const checkHistoricalData = async () => {
+            const data = dataManager.getData();
+            console.log('Checking historical data:', data?.length || 0, 'points');
+            
+            if (data && data.length > 0) {
+                try {
+                    // Filter out null or malformed data points
+                    const filteredData = data.filter(
+                        p => p && p.time != null && p.value != null
+                    );
+                    
+                    if (filteredData.length > 0) {
                         chartState.series.setData(filteredData);
-
-                        // Fit content only after the initial data is loaded
-                        if (!isInitialDataLoaded) {
-                            chartState.chart.timeScale().fitContent();
-                            isInitialDataLoaded = true; // Set flag to true after first fit
-                        }
-                    } catch (error) {
-                        console.error('Failed to update chart data:', error);
+                        chartState.chart.timeScale().fitContent();
+                        isInitialDataLoaded = true;
+                        loadingIndicator.remove();
+                        return true;
                     }
+                } catch (error) {
+                    console.error('Failed to set initial chart data:', error);
+                }
+            }
+            
+            if (retryCount < maxRetries) {
+                retryCount++;
+                console.log(`Retrying historical data load (${retryCount}/${maxRetries})`);
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                return checkHistoricalData();
+            }
+            
+            loadingIndicator.textContent = 'Failed to load chart data. Try switching timeframes.';
+            return false;
+        };
+
+        // Initial historical data check
+        await checkHistoricalData();
+
+        // Listen for future historical updates
+        window.addEventListener('historicalUpdate', (e) => {
+            if (!chartState.series || !e.detail.data || !Array.isArray(e.detail.data)) return;
+            
+            const filteredData = e.detail.data.filter(
+                p => p && p.time != null && p.value != null
+            );
+            
+            if (filteredData.length > 0) {
+                try {
+                    chartState.series.setData(filteredData);
+                    
+                    // Only fit content if this is the first load
+                    if (!isInitialDataLoaded) {
+                        chartState.chart.timeScale().fitContent();
+                        isInitialDataLoaded = true;
+                        loadingIndicator.remove();
+                    }
+                } catch (error) {
+                    console.error('Failed to update chart data:', error);
                 }
             }
         });
