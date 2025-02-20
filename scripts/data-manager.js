@@ -35,13 +35,11 @@ class DataManager {
 
     async fetchInitialData() {
         try {
-            const [neoData, gasData] = await Promise.all([
-                fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=NEOUSDT'),
-                fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=GASUSDT')
+            const [neo, gas] = await Promise.all([
+                fetchBinanceData('https://api.binance.com/api/v3/ticker/24hr?symbol=NEOUSDT'),
+                fetchBinanceData('https://api.binance.com/api/v3/ticker/24hr?symbol=GASUSDT')
             ]);
-            
-            const neo = await neoData.json();
-            const gas = await gasData.json();
+
             this.neoPrice = parseFloat(neo.lastPrice);
             this.gasPrice = parseFloat(gas.lastPrice);
             this.neo24hChange = parseFloat(neo.priceChangePercent);
@@ -83,13 +81,10 @@ class DataManager {
         
         try {
             for (let page = 0; page < maxPages; page++) {
-                const [neoKlines, gasKlines] = await Promise.all([
-                    fetch(`https://api.binance.com/api/v3/klines?symbol=NEOUSDT&interval=${timeframe}&limit=1000&endTime=${endTime}`),
-                    fetch(`https://api.binance.com/api/v3/klines?symbol=GASUSDT&interval=${timeframe}&limit=1000&endTime=${endTime}`)
+                const [neoData, gasData] = await Promise.all([
+                    fetchBinanceData(`https://api.binance.com/api/v3/klines?symbol=NEOUSDT&interval=${timeframe}&limit=1000&endTime=${endTime}`),
+                    fetchBinanceData(`https://api.binance.com/api/v3/klines?symbol=GASUSDT&interval=${timeframe}&limit=1000&endTime=${endTime}`)
                 ]);
-
-                const neoData = await neoKlines.json();
-                const gasData = await gasKlines.json();
 
                 if (!neoData.length || !gasData.length) break;
 
@@ -130,13 +125,11 @@ class DataManager {
 
         this.isLoadingHistoricalData = true;
         try {
-            const [neoKlines, gasKlines] = await Promise.all([
-                fetch(`https://api.binance.com/api/v3/klines?symbol=NEOUSDT&interval=${timeframe}&limit=1000&endTime=${endTime}`),
-                fetch(`https://api.binance.com/api/v3/klines?symbol=GASUSDT&interval=${timeframe}&limit=1000&endTime=${endTime}`)
+            const [neoData, gasData] = await Promise.all([
+                fetchBinanceData(`https://api.binance.com/api/v3/klines?symbol=NEOUSDT&interval=${timeframe}&limit=1000&endTime=${endTime}`),
+                fetchBinanceData(`https://api.binance.com/api/v3/klines?symbol=GASUSDT&interval=${timeframe}&limit=1000&endTime=${endTime}`)
             ]);
 
-            const neoData = await neoKlines.json();
-            const gasData = await gasKlines.json();
             const newBars = this.processHistoricalData(neoData, gasData);
 
             if (newBars.length > 0) {
@@ -382,6 +375,18 @@ class DataManager {
             detail: { data }
         }));
     }
+}
+
+/**
+ * Helper function to fetch data from Binance
+ * @param {string} url - The endpoint URL
+ */
+async function fetchBinanceData(url) {
+    const response = await fetch(url);
+    if (!response.ok) {
+    throw new Error(`Fetch failed with status: ${response.status} for URL: ${url}`);
+    }
+    return response.json();
 }
 
 window.dataManager = new DataManager();
