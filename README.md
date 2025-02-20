@@ -1,5 +1,7 @@
 <p align="center">
-  <img alt="GAS/NEO Ratio" title="GAS/NEO Ratio Chart" src="images/neo.svg" width="120">
+  <a href="https://neogas.eluvade.com">
+    <img alt="GAS/NEO Ratio" title="GAS/NEO Ratio Chart" src="images/neo.svg" width="120">
+  </a>
   <h1 align="center" style="margin-bottom: 0;">GAS/NEO Ratio Chart</h1>
   <p align="center">Real-time price ratio tracking between GAS and NEO tokens</p>
 </p>
@@ -18,6 +20,8 @@
     <img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Support on Ko-fi">
   </a>
 </p>
+
+[![Social Preview](social-preview.png)](https://neogas.eluvade.com)
 
 ## 📚 Table of Contents
 
