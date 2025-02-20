@@ -231,7 +231,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
 });
 
-async function toggleDonationCard(event) {
+async function toggleDonationCard() {
     const donationCard = document.querySelector('.donation-card');
     const donationFooter = document.querySelector('.donation-footer');
     const donationBody = document.querySelector('.donation-body');
@@ -240,8 +240,6 @@ async function toggleDonationCard(event) {
     const listener = e => {
         if (e.key === 'Escape' || !donationCard.contains(e.target)) {
             collapse();
-            document.removeEventListener('keydown', listener);
-            document.removeEventListener('click', listener);
         }
     }
 
@@ -250,6 +248,8 @@ async function toggleDonationCard(event) {
             qr.classList.remove('visible');
         });
         overlay.style.display = 'none';
+        document.removeEventListener('keydown', listener);
+        document.removeEventListener('click', listener);
         await animateCSS(donationBody, 'collapse', 'fast');
         donationBody.classList.remove('expanded');
         donationCard.classList.remove('expanded');
@@ -265,7 +265,6 @@ async function toggleDonationCard(event) {
         donationFooter.classList.add('expanded');
     }
 
-    // add logic that calls expand or collapse accordingly:
     if (donationCard.classList.contains('expanded')) {
         collapse();
     } else {
