@@ -21,7 +21,7 @@
   </a>
 </p>
 
-[![Social Preview](social-preview.png)](https://neogas.eluvade.com)
+[![Social Preview](/images/social-preview.png)](https://neogas.eluvade.com)
 
 ## 📚 Table of Contents
 
