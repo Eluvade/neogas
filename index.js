@@ -178,8 +178,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                     lockVisibleTimeRangeOnResize: true
                 },
                 grid: {
-                    vertLines: { color: 'rgba(42, 46, 57, 0.5)' },
-                    horzLines: { color: 'rgba(42, 46, 57, 0.5)' }
+                    vertLines: { color: 'rgba(42, 46, 57, 0.4)' }, // ||  visible: false
+                    horzLines: { color: 'rgba(42, 46, 57, 0.4)' }, // ||  visible: false
                 },
                 rightPriceScale: {
                     borderVisible: false,
@@ -190,21 +190,27 @@ document.addEventListener('DOMContentLoaded', async function() {
                 },
                 crosshair: {
                     mode: 0,
-                    // // hide the horizontal crosshair line
-                    // horzLine: {
-                    //     visible: true,
-                    //     labelVisible: true,
-                    // },
-                    // // hide the vertical crosshair label
-                    // vertLine: {
-                    //     labelVisible: true,
-                    // }
+                    vertLine: {
+                        width: 1,
+                        style: 1,
+                        visible: true,
+                        labelVisible: true,
+                    },
+                    horzLine: {
+                        width: 1,
+                        style: 1,
+                        visible: true,
+                        labelVisible: true,
+                    },
                 }
                 
             });
     
             chartState.series = chartState.chart.addAreaSeries({
                 color: getComputedStyle(document.body).getPropertyValue('--color-primary').trim(),
+                lineColor: '#26a69a',
+                topColor: 'rgba(38, 166, 154, 0.4)',
+                bottomColor: 'rgba(38, 166, 154, 0)',
                 lineWidth: 2,
                 priceFormat: {
                     type: 'price',
@@ -213,6 +219,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                 },
                 crosshairMarkerVisible: true,
                 crosshairMarkerRadius: 4,
+                lastValueVisible: true,
+                priceLineVisible: true,
             });
 
             const toolTipWidth = 80;
