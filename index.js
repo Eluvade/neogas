@@ -156,19 +156,51 @@ document.addEventListener('DOMContentLoaded', async function() {
                 crosshairMarkerRadius: 4,
             });
 
-            const container = document.getElementById('container');
-
             const toolTipWidth = 80;
             const toolTipHeight = 80;
             const toolTipMargin = 15;
 
             // Create and style the tooltip html element
             const toolTip = document.createElement('div');
-            toolTip.style = `width: 96px; height: 80px; position: absolute; display: none; padding: 8px; box-sizing: border-box; font-size: 12px; text-align: left; z-index: 1000; top: 12px; left: 12px; pointer-events: none; border: 1px solid; border-radius: 2px;font-family: -apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;`;
-            toolTip.style.background = 'black';
-            toolTip.style.color = 'white';
-            toolTip.style.borderColor = 'rgba( 38, 166, 154, 1)';
+            toolTip.classList.add('tooltip');
             chartContainer.appendChild(toolTip);
+
+            chartState.chart.subscribeCrosshairMove(param => {
+                if (
+                    param.point === undefined ||
+                    !param.time ||
+                    param.point.x < 0 ||
+                    param.point.x > chartContainer.clientWidth ||
+                    param.point.y < 0 ||
+                    param.point.y > chartContainer.clientHeight
+                ) {
+                    toolTip.style.display = 'none';
+                } else {
+                    const dateStr = param.time;
+                    toolTip.style.display = 'block';
+                    const data = param.seriesData.get(chartState.series);
+                    const price = data.value !== undefined ? data.value : data.close;
+                    
+                    toolTip.innerHTML = `
+                        <div class="tooltip-title">GAS / NEO</div>
+                        <div class="tooltip-price">${price.toFixed(5)}</div>
+                        <div class="tooltip-time">${dateStr}</div>
+                    `;
+            
+                    const y = param.point.y;
+                    let left = param.point.x + toolTipMargin;
+                    if (left > chartContainer.clientWidth - toolTipWidth) {
+                        left = param.point.x - toolTipMargin - toolTipWidth;
+                    }
+            
+                    let top = y + toolTipMargin;
+                    if (top > chartContainer.clientHeight - toolTipHeight) {
+                        top = y - toolTipHeight - toolTipMargin;
+                    }
+                    toolTip.style.left = left + 'px';
+                    toolTip.style.top = top + 'px';
+                }
+            });
 
             window.addEventListener('realtimeUpdate', (e) => {
                 if (chartState.series && e.detail.data) {
@@ -185,16 +217,12 @@ document.addEventListener('DOMContentLoaded', async function() {
             goToRealtimeButton.innerHTML = '<i class="fas fa-angle-double-right"></i>';
             goToRealtimeButton.classList.add('realtime-button');
             goToRealtimeButton.addEventListener('click', () => {
-                if (chartState.chart) {
-                    chartState.chart.timeScale().scrollToRealTime();
-                }
+                chartState.chart?.timeScale().scrollToRealTime();
             });
     
             // Add button to timeframe controls
-            const timeframeControls = document.querySelector('.chart-controls');
-            if (timeframeControls) {
-                timeframeControls.appendChild(goToRealtimeButton);
-            }
+            const chartControls = document.querySelector('.chart-controls');
+            chartControls?.appendChild(goToRealtimeButton);
     
             // Cleanup on window unload
             window.addEventListener('beforeunload', () => {
