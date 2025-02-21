@@ -792,3 +792,24 @@ section h2 {
     border-radius: 4px;
     z-index: 1000;
 }
+
+.open-source {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+.open-source a {
+    color: var(--color-primary);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem; /* Space between icon and text */
+}
+
+.open-source a:hover {
+    text-decoration: underline;
+}
+
+.open-source i {
+    font-size: 1.2rem; /* Adjust icon size */
+}
