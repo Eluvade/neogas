@@ -3,7 +3,7 @@
     <img alt="GAS/NEO Ratio" title="GAS/NEO Ratio Chart" src="images/neo.svg" width="120">
   </a>
   <h1 align="center" style="margin-bottom: 0;">GAS/NEO Ratio Chart</h1>
-  <p align="center">Real-time price ratio tracking between GAS and NEO tokens</p>
+  <p align="center">Open Source real-time price ratio tracking between GAS and NEO tokens</p>
 </p>
 
 <div align="center">
@@ -12,6 +12,9 @@
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![TradingView](https://img.shields.io/badge/TradingView-Lightweight%20Charts-orange)](https://www.tradingview.com/lightweight-charts/)
 [![PWA](https://img.shields.io/badge/PWA-ready-purple)](https://web.dev/progressive-web-apps/)
+[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](https://github.com/Eluvade/neogas/issues)
+[![GitHub Issues](https://img.shields.io/github/issues/Eluvade/neogas)](https://github.com/Eluvade/neogas/issues)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/Eluvade/neogas/pulls)
 
 </div>
 
@@ -36,6 +39,7 @@
 
 ## 🚀 Features
 
+- **Open Source**: Free to use, modify, and distribute under MIT license
 - **Real-time Updates**: Live price data via Binance WebSocket API
 - **Multiple Timeframes**: Support for 1m, 5m, 15m, 1h, 4h, and 1d views
 - **Interactive Charts**: Powered by TradingView Lightweight Charts™
