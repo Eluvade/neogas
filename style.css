@@ -813,7 +813,7 @@ section h2 {
 /* Advertising space styles */
 .safe-space {
     margin: 2rem auto;
-    min-height: 80px; /* Reduced height */
+    min-height: 80px;
     background: var(--color-tertiary);
     border-radius: 12px;
     display: flex;
@@ -822,12 +822,12 @@ section h2 {
     overflow: hidden;
     position: relative;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 0.5rem 1rem; /* Adjusted padding to optimize space */
+    padding: 0.74rem; /* Increased horizontal padding */
 }
 
 .safe-space.placeholder {
     border: 2px dashed #50525f;
-    background: linear-gradient(45deg, 
+    background: linear-gradient(135deg, 
         var(--color-tertiary) 0%,
         var(--color-quaternary) 100%);
 }
@@ -836,19 +836,21 @@ section h2 {
 .safe-space .placeholder-text {
     color: var(--color-text);
     opacity: 0.9;
-    font-size: 1rem;
+    font-size: 0.95rem; /* Slightly smaller font */
     display: flex;
     align-items: center;
-    gap: 0.7rem; /* Controls spacing between elements */
+    gap: 0.5rem; /* Reduced gap */
     flex-wrap: wrap; /* Ensures responsiveness */
     text-align: center;
     justify-content: center;
+    line-height: 1.4; /* Tighter line height */
 }
 
 /* Adjust icon size */
 .safe-space .placeholder-text i {
-    font-size: 1.4rem;
+    font-size: 1.2rem; /* Slightly smaller icon */
     color: var(--color-primary);
+    margin: 0 0.1rem; /* Add small margin around icon */
 }
 
 /* CTA Button */
@@ -858,38 +860,33 @@ section h2 {
     font-weight: 500;
     display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
-    padding-bottom: 1px;
+    gap: 0.25rem; /* Reduced gap */
+    padding: 0.2rem 0.4rem; /* Add padding around link */
     position: relative;
     white-space: nowrap; /* Prevents line breaks */
+    border-radius: 4px;
+    background: rgba(0, 229, 153, 0.1); /* Subtle background */
+    transition: background 0.2s ease;
+}
+
+.safe-space .contact-link:hover {
+    background: rgba(0, 229, 153, 0.15);
 }
 
 .safe-space .contact-link i {
-    font-size: 1rem;
-    opacity: 0.8;
+    font-size: 0.9rem; /* Slightly smaller icon */
+    opacity: 0.9;
 }
 
-/* CTA underline effect */
+/* Remove the underline effect and replace with background hover */
 .safe-space .contact-link:after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 1px;
-    background: var(--color-primary);
-    transform: scaleX(0);
-    transition: transform 0.3s ease;
-}
-
-.safe-space .contact-link:hover:after {
-    transform: scaleX(1);
+    display: none;
 }
 
 /* Inline subtext (small, subtle) */
 .safe-space .subtext {
-    font-size: 0.85rem;
+    font-size: 0.8rem; /* Slightly smaller subtext */
     opacity: 0.7;
     display: inline;
-    margin-left: 0.5rem; /* Adds spacing while keeping it inline */
+    margin-left: 0.4rem; /* Adds spacing while keeping it inline */
 }
