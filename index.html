@@ -15,15 +15,15 @@
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="Permissions-Policy" content="interest-cohort=()">
     <meta http-equiv="Content-Security-Policy" 
-      content="default-src 'self' https:;
-              connect-src 'self' https://api.binance.com wss://stream.binance.com:9443;
-              img-src 'self' data: https:;
-              script-src 'self' 'unsafe-inline' https://storage.ko-fi.com https://unpkg.com;
-              style-src 'self' 'unsafe-inline' https:;
-              font-src 'self' https:;
-              frame-src 'self' https://ko-fi.com;
-              upgrade-insecure-requests;">
-
+    content="default-src 'self' https:;
+        connect-src 'self' https://api.binance.com wss://stream.binance.com:9443 https://www.google-analytics.com https://region1.google-analytics.com;
+        img-src 'self' data: https:;
+        script-src 'self' 'unsafe-inline' https://storage.ko-fi.com https://unpkg.com https://www.googletagmanager.com https://www.google-analytics.com;
+        style-src 'self' 'unsafe-inline' https:;
+        font-src 'self' https:;
+        frame-src 'self' https://ko-fi.com;
+        upgrade-insecure-requests;">
+      
     <!-- Resource Hints -->
     <link rel="preconnect" href="https://api.binance.com">
     <link rel="preconnect" href="https://stream.binance.com">
@@ -69,22 +69,31 @@
     <!-- Stylesheets -->
     <link rel="stylesheet" href="style.css">
     <!-- Add schema.org structured data -->
-<script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "GAS/NEO Ratio Chart",
-      "description": "Live cryptocurrency price tracking tool for GAS/NEO ratio with real-time market data and interactive charts",
-      "url": "https://neogas.eluvade.com",
-      "author": {
-        "@type": "Person",
-        "name": "Bunny Eluvade",
-        "url": "https://eluvade.com"
-      },
-      "applicationCategory": "FinanceApplication",
-      "operatingSystem": "Any"
-    }
-</script>
+    <script type="application/ld+json">
+        {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "GAS/NEO Ratio Chart",
+        "description": "Live cryptocurrency price tracking tool for GAS/NEO ratio with real-time market data and interactive charts",
+        "url": "https://neogas.eluvade.com",
+        "author": {
+            "@type": "Person",
+            "name": "Bunny Eluvade",
+            "url": "https://eluvade.com"
+        },
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Any"
+        }
+    </script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SKNVY8E7SS"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-SKNVY8E7SS');
+    </script>
 </head>
 <body>
     <header class="site-header">
